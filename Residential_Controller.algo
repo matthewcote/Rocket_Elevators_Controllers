@@ -8,58 +8,168 @@ Call buttons
 Doors
 Floor request buttons
 
-'Residential Controller' -'one column, two elevators, ten floors' 
-'- assumption - a column is a group of elevators that all serve the same floors
+define class column:
+    constructormethod(floor_num,number_of_ellies)
+        SET array of elevator object instances
+        Set array of elevator call button objects
 
-'define column object - properties column_name, bottom_floor_num, top_floor_num, elevators_num - has elevator objects and Call_button objects
+define class elevators:
 
-    'Call_button objects - has properites floor is a number, and direction - up or down, sequence for pushed'
+assumptions - buttons communicate to controller that they are active when pressed, and stay active until status is changed back via algorithm- 
+when active the indicator light for button is active. When elevators are installed, they are on floor 1, the doors are closed, the buttons are all inactive
 
-'define elevator of column - inherits the bottom_floor_num, top_floor_num properties of parent column, has idle property - boolean - if true has currentfloor property (else null), 
-'has door objects, has floor request buttons)
+'COLOMN CLASS'
+'Declaration of column class'
+SEQUENCE construct_column OF column USING name AND floor_num AND elevator_num 'COLUMN OBJECT CONSTRUCTOR METHOD'
+    SET column 'create a namespace for column properties and objects'
+    SET name OF column TO name
+    SET elevator_list OF column TO ARRAY 'initialize list or array for holding object '
+    SET call_button_list OF column TO ARRAY 'initialize list or array for holding object 
+    'set properties'
+    SET floor_num OF column TO floor_num
+    SET elevators_num OF column TO elevator_num
+    'add elevators'
+    SET num TO 1
+    WHILE num is less than elevators_num
+        SET elevator CALL construct_elevator OF column WITH num
+        PUSH elevator to elevator_list OF column
+        INCREMENT num
+    'add call_buttons'
+    SET floor TO 1
+    WHILE floor is less than or equal to floor_num
+        CALL construct_call_buttons OF column WITH floor
+        INCREMENT floor
+    'now I have a column, the column has number of floors and elevators properties passed to it during construction
+    ' There are arrays of objects - for elevators and call buttons - belonging to the column
+    'each elevator object has a door and a set of floor request button objects'
+    RETURN column
+ENDSEQUENCE
 
-    'define door - has doorOpen property, sequence to open door, sequence to close door'
-    'define floorrequestbuttons - has properies direction up or down, floor, calls sequence requestelevator'
-
+SEQUENCE construct_elevator OF column USING num 'ELEVATOR OBJECT CONSTRUCTOR METHOD'
+    SET elevator 'create namespace for elevator properties and objects'
+    SET name OF elevator of column to num
+    SET status OF elevator of column to "IDLE" 'elevators have status - they can be IDLE, UP or DOWN'
+    SET current_floor OF elevator TO 1
+    SET door_status OF elevator to "CLOSED"
+    SET request_button_list OF elevator TO ARRAY
+    SET floor_list OF elevator to ARRAY 'initialize a floor_list for the elevator'
     
-'define column object - properties column_name, bottom_floor_num, top_floor_num, elevators_num - has elevator objects and Call_button objects   
-SEQUENCE init_column USING column_name AND bottom_floor_num AND top_floor_num AND elevators_num 'COLUMN OBJECT'
+    SET floor TO 1
+    WHILE floor is less than or equal to floor_num OF column
+        SET request_button CALL construct__request_button OF elevator OF column WITH floor
+        PUSH request_button to request_button_list OF elevator 
+        INCREMENT floor
+
+    RETURN elevator
+ENDSEQUENCE
+
+SEQUENCE construct_call_buttons OF column USING floor 'CALL BUTTON OBJECT'
+        IF floor is not equal TO 1 'if it is not the bottom floor, add a down button'
+            SET call_button
+            SET floor of call_button to floor
+            SET direction of call_button to "DOWN"
+            SET status OF call_button TO "IDLE" - 'initialize an upbutton object and set its status to idle
+            PUSH call_button to call_button_list OF column
+        ENDIF
+        IF floor is not equal TO floor_num OF column 'if it is not the top floor, add a down button'
+            SET call_button
+            SET floor of call_button to floor
+            SET direction of call_button to "UP"
+            SET status OF call_button TO "IDLE" - 'initialize an upbutton object and set its status to idle
+            PUSH call_button to call_button_list OF column
+        ENDIF
+ENDSEQUENCE
+
+SEQUENCE call_button_pushed OF column USING call_button 'a call_button has been pressed, and the call_button object was passed as an argument to this method'
+    'hmm, now i need to think - column must assign this call to one elevator'
+    'for now - i do effecient mode -classic- 
+    'if an elevator is moving up, it will stop to pick up people that want to go up,  it will continue to move up as long as it gets work to do above it, to the top floor or when there is no more work in the up direction
+    'if an elevator is moving down, it will stop to pick up people that want to go down, it will continue to move down as long as it has work to do below it, to the bottom floor or when there is no more work.'
+
+    'bonus idea - if there is no work, and no elevator at the bottom, the elevator closest to the bottom will go to the ground floor'
     
+    'okay - simple - always - if a IDLE elevator is on the floor of the button - the door opens, thats your elevator, door closes ELSE
+    '- if button direction is up - first priority is closest elevator below the button moving up - send that elevator the job
+            'second priority is any IDLE elevator'
+            'third priority is a call list, when an elevator switches direction it looks at the call list to see if there is anyone eligible for pick up'
+        'if button direction is down - first priority is closest elevator above the botton moving down'
+            'second priority is any IDLE elevator'
+            'third priority is a call list, when an elevator switches direction it looks at the call list to see if there is anyone eligible for pick up'
+
+            'a elevator only ever gets a floor added to it's floor list if it is IDLE or moving in the direction of the floor, never in the direction opposite of movement
+    SET status of call_button to "ACTIVE" 'light of button comes on and stays on until button arrives'
+        set best_diff to -1
+        set elevator_choice to "NULL"
     
-    SEQUENCE init_elevators of column_name using elevators_num of column_name'ELEVATOR OBJECT'
+        'iterate through elevators in elevator_list'
+        'first priority'
+        IF status of elevator is equal to "IDLE" AND floor of elevator is equal to floor of call_button ' if a IDLE elevator is on the floor of the button - the door opens, thats your elevator, door closes'
+            SET elevator_choice TO name of elevator
+            'call SEQUENCE open_door of elevator
+        ENDIF
         
-        SEQUENCE init_door of elevator_name 'DOOR OBJECT'
+        'second priority'
+        IF status of elevator is equal to "UP" AND floor of elevator is less than floor of call_button 
+            SET gap TO floor of call_button MINUS floor of elevator 'set gap to positive integer'
+            IF best_gap is equal to negative one OR best_gap is more than gap
+                set bestgap to gap
+                set elevator_choice to name of elevator
+            ENDIF
+        ENDIF
 
-        ENDSEQUENCE
+        IF status of elevator is equal to "DOWN" AND floor of elevator is more than floor of call_button 
+            SET gap TO floor of elevator MINUS floor of call_button 'set gap to positive integer'
+            IF best_gap is equal to negative one OR best_gap is more than gap
+                set bestgap to gap
+                set elevator_choice to name of elevator
+            ENDIF
+        ENDIF
 
-        SEQUENCE init_floor_request_button of elevator_name 'FLOOR REQUEST BUTTON OBJECT'
+        'end iteration'
+        IF elevator_choice is EQUAL TO "NULL" 'third priority is a call list'
+            'add to call_list'
+        ENDIF
+    
+ENDSEQUENCE
 
-        END SEQUENCE
+'ELEVATOR CLASS'    
+SEQUENCE open_door OF elevator 
+    SET door_status OF elevator to "OPEN"
+ENDSEQUENCE
 
-    ENDSEQUENCE
+SEQUENCE close_door OF elevator
+    SET door_status OF elevator to "CLOSED"
+ENDSEQUENCE
 
-    SEQUENCE init_call_button of column_name using floor 'CALL BUTTON OBJECT'
+SEQUENCE push_floor_list of elevator USING floor
+    push floor to floor_list of elevator
+    call move of elevator
+END SEQUENCE
 
-    ENDSEQUENCE
+SEQUENCE move of elevator 
+    SET i to zero
+    
+    while floor_list of elevator 'while there are target floors in our floor list'
+    'find closest floor and direction'
+    SET DIRECTION TO "NULL"
+    SET status of elevator TO direction 'UP or DOWN - 
+    DECREMENT current_floor of elevator by 1 'change floor one floor in correct direction'
+    'if floor is on floor list - remove floor from floorlist'
 
-    set num to one
+ENDSEQUENCE
+
+SEQUENCE construct_request_button OF elevator OF column USING floor 'FLOOR REQUEST BUTTON OBJECT'
+    SET request_button OF elevator OF column
+    SET floor OF request_button OF elevator OF column TO floor
+    SET status OF request_button OF elevator OF column TO "IDLE"
+    RETURN request_button
+ENDSEQUENCE
+
+SEQUENCE request_button_pushed USING request_button 'a request_button has been pressed, and the request_button object was passed as an argument to this method'
+    'take the request button information, add it to the work list....this person is in the elevator and wants to go to the floor, so the job isn't done until they get to the floor.
+    'every elevator needs a list - need to push floor request to list - elevator needs the floor the user wants to go to '
 ENDSEQUENCE
     
-    
-CALL init_column WITH residential AND 1 AND 10 AND 2 'creates a column named residential, with a bottom_floor of 1, a top_floor of 10, and 2 elevators'
-CALL init_elevators of residential WITH 
-    
-    
-    
-    
-    
-    'sequence initialize  - defines and creates elevator objects and floor request button objects, has loop that will initialize floor request button objects'
+CALL init_column WITH residential AND 10 AND 2 'creates a column named residential, with a bottom_floor OF 1, a top_floor OF 10, and 2 elevators'
 
-    '
-
-        'define door - has doorOpen property, sequence to open door, sequence to close door'
-
-    'define floorrequestbuttons - has properies direction up or down, floor, calls sequence requestelevator'
-
-'initialize column, set bottomfloor to 1, set top floor to 10, initialize two elevator objects for this column, initialize floor request button objects'
-'sequence initialize  - defines and creates elevator objects and floor request button objects, has loop that will initialize floor request button objects'
+    
