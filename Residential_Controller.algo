@@ -1,0 +1,65 @@
+Requirements 
+
+The Residential building for which the first controller is to be programmed has only one column consisting of two elevators and 10 floors.
+Objects that need to be controlled:
+Column
+Elevators (Cages)
+Call buttons
+Doors
+Floor request buttons
+
+'Residential Controller' -'one column, two elevators, ten floors' 
+'- assumption - a column is a group of elevators that all serve the same floors
+
+'define column object - properties column_name, bottom_floor_num, top_floor_num, elevators_num - has elevator objects and Call_button objects
+
+    'Call_button objects - has properites floor is a number, and direction - up or down, sequence for pushed'
+
+'define elevator of column - inherits the bottom_floor_num, top_floor_num properties of parent column, has idle property - boolean - if true has currentfloor property (else null), 
+'has door objects, has floor request buttons)
+
+    'define door - has doorOpen property, sequence to open door, sequence to close door'
+    'define floorrequestbuttons - has properies direction up or down, floor, calls sequence requestelevator'
+
+    
+'define column object - properties column_name, bottom_floor_num, top_floor_num, elevators_num - has elevator objects and Call_button objects   
+SEQUENCE init_column USING column_name AND bottom_floor_num AND top_floor_num AND elevators_num 'COLUMN OBJECT'
+    
+    
+    SEQUENCE init_elevators of column_name using elevators_num of column_name'ELEVATOR OBJECT'
+        
+        SEQUENCE init_door of elevator_name 'DOOR OBJECT'
+
+        ENDSEQUENCE
+
+        SEQUENCE init_floor_request_button of elevator_name 'FLOOR REQUEST BUTTON OBJECT'
+
+        END SEQUENCE
+
+    ENDSEQUENCE
+
+    SEQUENCE init_call_button of column_name using floor 'CALL BUTTON OBJECT'
+
+    ENDSEQUENCE
+
+    set num to one
+ENDSEQUENCE
+    
+    
+CALL init_column WITH residential AND 1 AND 10 AND 2 'creates a column named residential, with a bottom_floor of 1, a top_floor of 10, and 2 elevators'
+CALL init_elevators of residential WITH 
+    
+    
+    
+    
+    
+    'sequence initialize  - defines and creates elevator objects and floor request button objects, has loop that will initialize floor request button objects'
+
+    '
+
+        'define door - has doorOpen property, sequence to open door, sequence to close door'
+
+    'define floorrequestbuttons - has properies direction up or down, floor, calls sequence requestelevator'
+
+'initialize column, set bottomfloor to 1, set top floor to 10, initialize two elevator objects for this column, initialize floor request button objects'
+'sequence initialize  - defines and creates elevator objects and floor request button objects, has loop that will initialize floor request button objects'
