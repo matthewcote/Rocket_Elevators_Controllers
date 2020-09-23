@@ -33,37 +33,6 @@ DEFINE Column USING floor_num AND elevator_num
     ENDSEQUENCE
 ENDDEFINE
 
-DEFINE ModernColumn USING origin AND bottom_floor AND top_floor AND elevator_num
-    origin: origin,
-    bottom_floor: bottom_floor,
-    top_floor: top_floor,
-    elevator_num: elevator_num,
-    elevator_list: SET TO EMPTY List,
-    call_button_list: SET TO EMPTY List,
-
-    SEQUENCE fill_elevator_list 
-        SET num TO 1
-        WHILE num is less than or equal TO elevator_num 
-            SET elevator TO INSTANTIATE Elevator WITH num
-            PUSH elevator TO elevator_list 
-            INCREMENT num
-        ENDWHILE
-    ENDSEQUENCE
-
-    SEQUENCE fill_call_button_list USING floor_num
-        SET floor TO bottom_floor
-        WHILE floor is less than or equal TO top_floor
-            SET call_button TO INSTANTIATE Call_Button USING floor 
-            PUSH call_button TO call_button_list 
-            INCREMENT floor
-        ENDWHILE
-    ENDSEQUENCE
-
-ENDDEFINE
-
-DEFINE ModernElevator USING num
-ENDDEFINE
-
 DEFINE Elevator USING num AND floor_num
     name: num,
     status: "IDLE", 'ELEVATOR can be IDLE, UP or DOWN'
