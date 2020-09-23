@@ -18,12 +18,12 @@ DEFINE Column USING floor_num AND elevator_num
     SEQUENCE fill_call_button_list USING floor_num
         SET floor TO 1
         WHILE floor is less than or equal TO floor_num
-            IF floor is not equal TO 1 'if it is not the bottom floor, add a down button'
+            IF floor is not equal TO 1 
                 SET call_button direction to "DOWN"
                 SET call_button TO INSTANTIATE Call_Button USING floor AND direction
                 PUSH call_button TO call_button_list 
             ENDIF
-            IF floor is not equal TO floor_num'if it is not the top floor, add a down button'
+            IF floor is not equal TO floor_num
                 SET call_button direction TO "UP"
                 SET call_button TO INSTANTIATE Call_Button USING floor AND direction
                 PUSH call_button to call_button_list
@@ -33,7 +33,7 @@ DEFINE Column USING floor_num AND elevator_num
     ENDSEQUENCE
 ENDDEFINE
 
-DEFINE Elevator USING num AND floor_num
+DEFINE Elevator USING mode AND num AND floor_num
     name: num,
     status: "IDLE", 'ELEVATOR can be IDLE, UP or DOWN'
     current_floor: 1,
@@ -126,7 +126,7 @@ DEFINE Call_Button USING floor AND direction
             SET best_diff TO -1
             SET elevator_choice to "NULL"
             
-            FOR elevator IN elevator_list 
+            FOR EACH elevator IN elevator_list 
                 'first priority'
                 IF elevator status is equal TO "IDLE" AND elevator floor is equal to call_button floor
                     SET elevator_choice TO elevator name 'not null - might need it later'
@@ -208,7 +208,7 @@ DEFINE Request_Button USING floor
     ENDSEQUENCE
 ENDDEFINE
 
-DEFINE Door USING floor 'door of elevator shaft floor door'
+DEFINE Door USING floor 
     SEQUENCE open_door
         SET door_status TO "OPEN"
     ENDSEQUENCE
@@ -224,7 +224,9 @@ DEFINE Door USING floor 'door of elevator shaft floor door'
     'TODO'
 ENDDEFINE
 
-DEFINE Edoor 'door of elevator - every elevator needs exactly 1 Edoor and 1 Door for every floor it serves'
+DEFINE Edoor 
+    SET door_status TO "ClOSED"
+
     SEQUENCE open_door
         SET door_status TO "OPEN"
     ENDSEQUENCE
@@ -244,7 +246,7 @@ DEFINE Floor_Display USING display_number
     display_number: display_number
     
     SEQUENCE set_display_number USING floor
-        SET display_number TO floor
+        SET display_number TO floor 
     ENDSEQUENCE
 ENDDEFINE
 
