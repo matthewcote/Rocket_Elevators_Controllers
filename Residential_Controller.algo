@@ -1,50 +1,81 @@
 DEFINE Column USING floor_num AND elevator_num 
+    mode: mode,
     elevator_list: SET TO EMPTY List,
     call_button_list: SET TO EMPTY List,
     call_wait_list: SET TO EMPTY List,
     floor_num: floor_num,
-    elevator_num: elevator_num
+    elevator_num: elevator_num,
 
-        SEQUENCE fill_elevator_list 
-            SET num TO 1
-            WHILE num is less than or equal TO elevator_num 
-                SET elevator TO INSTANTIATE Elevator WITH num
-                PUSH elevator TO elevator_list 
-                INCREMENT num
-            ENDWHILE
-        ENDSEQUENCE
+    SEQUENCE fill_elevator_list 
+        SET num TO 1
+        WHILE num is less than or equal TO elevator_num 
+            SET elevator TO INSTANTIATE Elevator WITH num AND floor_num
+            PUSH elevator TO elevator_list 
+            INCREMENT num
+        ENDWHILE
+    ENDSEQUENCE
 
-        SEQUENCE fill_call_button_list USING floor_num
-            SET floor TO 1
-            WHILE floor is less than or equal TO floor_num
-                IF floor is not equal TO 1 'if it is not the bottom floor, add a down button'
-                    SET call_button direction to "DOWN"
-                    SET call_button TO INSTANTIATE Call_Button USING floor AND direction
-                    PUSH call_button TO call_button_list 
-                ENDIF
-                IF floor is not equal TO floor_num'if it is not the top floor, add a down button'
-                    SET call_button direction TO "UP"
-                    SET call_button TO INSTANTIATE Call_Button USING floor AND direction
-                    PUSH call_button to call_button_list
-                ENDIF
-                INCREMENT floor
-            ENDWHILE
-        ENDSEQUENCE
+    SEQUENCE fill_call_button_list USING floor_num
+        SET floor TO 1
+        WHILE floor is less than or equal TO floor_num
+            IF floor is not equal TO 1 'if it is not the bottom floor, add a down button'
+                SET call_button direction to "DOWN"
+                SET call_button TO INSTANTIATE Call_Button USING floor AND direction
+                PUSH call_button TO call_button_list 
+            ENDIF
+            IF floor is not equal TO floor_num'if it is not the top floor, add a down button'
+                SET call_button direction TO "UP"
+                SET call_button TO INSTANTIATE Call_Button USING floor AND direction
+                PUSH call_button to call_button_list
+            ENDIF
+            INCREMENT floor
+        ENDWHILE
+    ENDSEQUENCE
 ENDDEFINE
 
-DEFINE Elevator USING num 
+DEFINE ModernColumn USING origin AND bottom_floor AND top_floor AND elevator_num
+    origin: origin,
+    bottom_floor: bottom_floor,
+    top_floor: top_floor,
+    elevator_num: elevator_num,
+    elevator_list: SET TO EMPTY List,
+    call_button_list: SET TO EMPTY List,
+
+    SEQUENCE fill_elevator_list 
+        SET num TO 1
+        WHILE num is less than or equal TO elevator_num 
+            SET elevator TO INSTANTIATE Elevator WITH num
+            PUSH elevator TO elevator_list 
+            INCREMENT num
+        ENDWHILE
+    ENDSEQUENCE
+
+    SEQUENCE fill_call_button_list USING floor_num
+        SET floor TO bottom_floor
+        WHILE floor is less than or equal TO top_floor
+            SET call_button TO INSTANTIATE Call_Button USING floor 
+            PUSH call_button TO call_button_list 
+            INCREMENT floor
+        ENDWHILE
+    ENDSEQUENCE
+
+ENDDEFINE
+
+DEFINE ModernElevator USING num
+ENDDEFINE
+
+DEFINE Elevator USING num AND floor_num
     name: num,
     status: "IDLE", 'ELEVATOR can be IDLE, UP or DOWN'
     current_floor: 1,
-    door_status: "CLOSED",
     request_button_list: SET TO EMPTY List,
     door_list: SET TO EMPTY List,
     floor_list: SET TO EMPTY List,
     edoor: SET edoor TO INSTATIATE Edoor
-    floor_display: SET floor_display TO INSTATIATE Floor_Display
+    floor_display: SET Floor_Display TO INSTATIATE Floor_Display
     
     SET floor TO 1
-    WHILE floor is less than or equal to column floor_num
+    WHILE floor is less than or equal to floor_num
         SET request_button TO INSTANTIATE Request_Button WITH floor
         PUSH request_button TO request_button_list
         SET door TO INSTANTIATE Door WITH floor
@@ -52,14 +83,14 @@ DEFINE Elevator USING num
         INCREMENT floor
     ENDWHILE
 
-    SEQUENCE push_floor_list USING floor 'adds floor to elevator's floor_list and calls move on that elevator
+    SEQUENCE push_floor_list USING floor 
         push floor TO floor_list 
         CALL move 
     END SEQUENCE
 
-    SEQUENCE move  'recursive sequence - while there is a list '
+    SEQUENCE move 
         SET direction TO "NULL"
-        FOR EACH floor IN floor_list  'while there are target floors in our floor list'
+        FOR EACH floor IN floor_list 
             IF floor IS EQUAL TO current_floor
                 REMOVE floor FROM floor_list
                 CALL stop 
@@ -186,7 +217,7 @@ DEFINE Request_Button USING floor
     floor: floor,
     status: "IDLE"
 
-    SEQUENCE request_button_pushed
+    SEQUENCE request_button_pushed USING status
         SET request_button status TO "ACTIVE"
         IF elevator status is "IDLE"
             CALL elevator push_floor_list WITH floor
@@ -240,13 +271,14 @@ DEFINE Edoor 'door of elevator - every elevator needs exactly 1 Edoor and 1 Door
     'TODO'
 ENDDEFINE
 
-DEFINE Floor_Display
+DEFINE Floor_Display USING display_number
     display_number: display_number
     
     SEQUENCE set_display_number USING floor
         SET display_number TO floor
     ENDSEQUENCE
-ENDDEFINE    
+ENDDEFINE
+
 SET column1 TO INSTANTIATE Column WITH 10 AND 2 'creates a column named residential, with 10 floors, and 2 elevators'
 CALL column1 SEQUENCE fill_elevator_list WITH column1 elevator_num
 CALL column1 SEQUENCE fill_call_button_list WITH column1 floor_num
