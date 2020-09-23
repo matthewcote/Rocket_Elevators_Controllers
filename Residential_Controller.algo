@@ -38,22 +38,19 @@ DEFINE Elevator USING num
     current_floor: 1,
     door_status: "CLOSED",
     request_button_list: SET TO EMPTY List,
-    floor_list: SET TO EMPTY List 
+    door_list: SET TO EMPTY List,
+    floor_list: SET TO EMPTY List,
+    edoor: SET edoor TO INSTATIATE Edoor
+    floor_display: SET floor_display TO INSTATIATE Floor_Display
     
     SET floor TO 1
     WHILE floor is less than or equal to column floor_num
         SET request_button TO INSTANTIATE Request_Button WITH floor
         PUSH request_button TO request_button_list
+        SET door TO INSTANTIATE Door WITH floor
+        PUSH door TO door_list
         INCREMENT floor
     ENDWHILE
-
-    SEQUENCE open_door
-        SET door_status TO "OPEN"
-    ENDSEQUENCE
-
-    SEQUENCE close_door 
-        SET door_status TO "CLOSED"
-    ENDSEQUENCE
 
     SEQUENCE push_floor_list USING floor 'adds floor to elevator's floor_list and calls move on that elevator
         push floor TO floor_list 
@@ -86,7 +83,15 @@ DEFINE Elevator USING num
 
     SEQUENCE stop 
         CALL open_door 
+        
+        FOR EACH request_button in request_button_list
+            IF request_button floor is equal to current_floor
+                SET request_button status TO "IDLE"
+            ENDIF
+        ENDFOR
+        
         CALL wait 
+            
 
         IF floor_list IS EMPTY
             IF colum call_list is EMPTY
@@ -109,18 +114,12 @@ DEFINE Elevator USING num
         WAIT x seconds
         CALL close_door 
     ENDSEQUENCE
-
-    SEQUENCE elevator_door_alert 
-
-        CALL open_door
-        CALL wait
-    ENDSEQUENCE
 ENDDEFINE
 
 DEFINE Call_Button USING floor AND direction 
     floor:  floor,
     direction: direction,
-    status: "IDLE" - 'initialize an upbutton object and set its status to idle
+    status: "IDLE" 
 
         SEQUENCE call_button_pushed USING elevator_list
             SET call_button status TO "ACTIVE" 'light of button comes on and stays on until elevator arrives'
@@ -188,18 +187,66 @@ DEFINE Request_Button USING floor
     status: "IDLE"
 
     SEQUENCE request_button_pushed
-        'TODO'
+        SET request_button status TO "ACTIVE"
+        IF elevator status is "IDLE"
+            CALL elevator push_floor_list WITH floor
+            RETURN 'OR ESCAPE SEQUENCE, BREAK SEQUENCE'
+        ENDIF   
+        IF elevator status is "UP"
+            IF request_button floor is more than elevator current_floor
+                CALL elevator push_floor_list WITH floor
+                RETURN
+            ENDIF
+        ENDIF  
+        IF elevator status is "DOWN"
+            IF request_button floor is less than elevator current_floor
+                CALL elevator push_floor_list WITH floor
+                RETURN
+            ENDIF
+        ENDIF   
+        'TODO - now I think we got someone pushed a button they shouldn't have - stop elevator, lock door, play music'
     ENDSEQUENCE
 ENDDEFINE
 
 DEFINE Door USING floor 'door of elevator shaft floor door'
+    SEQUENCE open_door
+        SET door_status TO "OPEN"
+    ENDSEQUENCE
+
+    SEQUENCE close_door 
+        SET door_status TO "CLOSED"
+    ENDSEQUENCE
+    SEQUENCE elevator_door_alert 
+
+        CALL open_door
+        CALL wait
+    ENDSEQUENCE
     'TODO'
 ENDDEFINE
 
 DEFINE Edoor 'door of elevator - every elevator needs exactly 1 Edoor and 1 Door for every floor it serves'
+    SEQUENCE open_door
+        SET door_status TO "OPEN"
+    ENDSEQUENCE
+
+    SEQUENCE close_door 
+        SET door_status TO "CLOSED"
+    ENDSEQUENCE
+    SEQUENCE elevator_door_alert 
+
+        CALL open_door
+        CALL wait
+    ENDSEQUENCE   
     'TODO'
 ENDDEFINE
+
+DEFINE Floor_Display
+    display_number: display_number
     
+    SEQUENCE set_display_number USING floor
+        SET display_number TO floor
+    ENDSEQUENCE
+ENDDEFINE    
 SET column1 TO INSTANTIATE Column WITH 10 AND 2 'creates a column named residential, with 10 floors, and 2 elevators'
 CALL column1 SEQUENCE fill_elevator_list WITH column1 elevator_num
 CALL column1 SEQUENCE fill_call_button_list WITH column1 floor_num
