@@ -5,6 +5,9 @@ DEFINE Column USING floor_num AND elevator_num
     call_wait_list: SET TO EMPTY List,
     floor_num: floor_num,
     elevator_num: elevator_num,
+    
+    call fill_elevator_list
+    call fill_call_button_list WITH floor_num
 
     SEQUENCE fill_elevator_list 
         SET num TO 1
@@ -19,13 +22,11 @@ DEFINE Column USING floor_num AND elevator_num
         SET floor TO 1
         WHILE floor is less than or equal TO floor_num
             IF floor is not equal TO 1 
-                SET call_button direction to "DOWN"
-                SET call_button TO INSTANTIATE Call_Button USING floor AND direction
+                SET call_button TO INSTANTIATE Call_Button USING floor AND "DOWN"
                 PUSH call_button TO call_button_list 
             ENDIF
             IF floor is not equal TO floor_num
-                SET call_button direction TO "UP"
-                SET call_button TO INSTANTIATE Call_Button USING floor AND direction
+                SET call_button TO INSTANTIATE Call_Button USING floor AND "UP"
                 PUSH call_button to call_button_list
             ENDIF
             INCREMENT floor
@@ -33,15 +34,15 @@ DEFINE Column USING floor_num AND elevator_num
     ENDSEQUENCE
 ENDDEFINE
 
-DEFINE Elevator USING mode AND num AND floor_num
+DEFINE Elevator USING num AND floor_num
     name: num,
-    status: "IDLE", 'ELEVATOR can be IDLE, UP or DOWN'
+    status: "IDLE", 
     current_floor: 1,
     request_button_list: SET TO EMPTY List,
     door_list: SET TO EMPTY List,
     floor_list: SET TO EMPTY List,
     edoor: SET edoor TO INSTATIATE Edoor
-    floor_display: SET Floor_Display TO INSTATIATE Floor_Display
+    floor_display: SET Floor_Display TO INSTATIATE Floor_Display WITH current_floor
     
     SET floor TO 1
     WHILE floor is less than or equal to floor_num
@@ -122,20 +123,20 @@ DEFINE Call_Button USING floor AND direction
     status: "IDLE" 
 
         SEQUENCE call_button_pushed USING elevator_list
-            SET call_button status TO "ACTIVE" 'light of button comes on and stays on until elevator arrives'
+            SET call_button status TO "ACTIVE" 
             SET best_diff TO -1
             SET elevator_choice to "NULL"
             
             FOR EACH elevator IN elevator_list 
                 'first priority'
                 IF elevator status is equal TO "IDLE" AND elevator floor is equal to call_button floor
-                    SET elevator_choice TO elevator name 'not null - might need it later'
+                    SET elevator_choice TO elevator name 
                     SET call_button status TO "IDLE"
                     CALL elevator stop
                 ENDIF
                 'second priority'
                 IF elevator status is equal TO "UP" AND call_button direction is equal to "UP" AND elevator floor is less than call_button floor AND elevator_choice is equal TO "NULL"
-                    SET diff TO call_button floor MINUS elevator florr 'set diff to positive integer'
+                    SET diff TO call_button floor MINUS elevator floor 
                     IF best_diff is equal TO negative one OR best_diff is more than diff
                         SET best_diff TO diff
                         SET elevator_choice TO elevator name
@@ -143,16 +144,16 @@ DEFINE Call_Button USING floor AND direction
                 ENDIF
 
                 IF elevator status is equal TO "DOWN" AND call_button direction is equal to "DOWN" AND elevator floor is more than call_button floor AND elevator_choice is equal TO "NULL"
-                    SET diff TO elevator floor MINUS call_button floor'set diff to positive integer'
+                    SET diff TO elevator floor MINUS call_button floor
                     IF best_diff is equal TO negative one OR best_diff is more than diff
                         SET best_diff TO diff
                         SET elevator_choice TO elevator name
                     ENDIF
                 ENDIF
-            ENDFOR 'end iteration '
+            ENDFOR 
         
-            IF elevator_choice is EQUAL TO "NULL" 'first two priorities failed - third priority is any idle elevator call - best_diff still equals -1'
-                FOR elevator IN elevator_list  'iterate through elevators in elevator_list'        
+            IF elevator_choice is EQUAL TO "NULL" 
+                FOR elevator IN elevator_list      
                     IF elevator status is equal TO "IDLE" AND elevator floor is more than floor 
                         SET diff TO elevator floor MINUS call_button floor'set diff to positive integer'
                         IF best_diff is equal TO negative one OR best_diff is more than diff
