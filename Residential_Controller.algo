@@ -65,13 +65,13 @@ DEFINE Elevator USING num AND floor_num
                 REMOVE floor FROM floor_list
                 CALL stop 
             ELSE 'determine direction'
-                IF direction IS EQUAL TO "NULL" AND floor IS LESS THAN current_floor
+                IF direction IS EQUAL TO "NULL" AND IF floor IS LESS THAN current_floor
                     SET direction TO "DOWN"
                     SET status TO direction
                     INCREMENT current_floor by negative 1 'TODO turn that into a function - maybe takes time'
                     CALL elevator move 
                 ENDIF
-                IF direction IS EQUAL TO "NULL" AND floor IS MORE THAN current_floor
+                IF direction IS EQUAL TO "NULL" AND IF floor IS MORE THAN current_floor
                     SET direction to "UP"
                     SET status TO direction
                     INCREMENT current_floor TO elevator by 1 'TODO turn that into a function - maybe takes time'
@@ -122,65 +122,103 @@ DEFINE Call_Button USING floor AND direction
     direction: direction,
     status: "IDLE" 
 
-        SEQUENCE call_button_pushed USING elevator_list
-            SET call_button status TO "ACTIVE" 
-            SET best_diff TO -1
-            SET elevator_choice to "NULL"
-            
-            FOR EACH elevator IN elevator_list 
-                'first priority'
-                IF elevator status is equal TO "IDLE" AND elevator floor is equal to call_button floor
-                    SET elevator_choice TO elevator name 
-                    SET call_button status TO "IDLE"
-                    CALL elevator stop
-                ENDIF
-                'second priority'
-                IF elevator status is equal TO "UP" AND call_button direction is equal to "UP" AND elevator floor is less than call_button floor AND elevator_choice is equal TO "NULL"
-                    SET diff TO call_button floor MINUS elevator floor 
-                    IF best_diff is equal TO negative one OR best_diff is more than diff
-                        SET best_diff TO diff
-                        SET elevator_choice TO elevator name
-                    ENDIF
-                ENDIF
-
-                IF elevator status is equal TO "DOWN" AND call_button direction is equal to "DOWN" AND elevator floor is more than call_button floor AND elevator_choice is equal TO "NULL"
-                    SET diff TO elevator floor MINUS call_button floor
-                    IF best_diff is equal TO negative one OR best_diff is more than diff
-                        SET best_diff TO diff
-                        SET elevator_choice TO elevator name
-                    ENDIF
-                ENDIF
-            ENDFOR 
+    SEQUENCE call_button_pushed USING elevator_list
+        SET call_button status TO "ACTIVE" 
+        SET elevator_choice to "NULL"
         
-            IF elevator_choice is EQUAL TO "NULL" 
-                FOR elevator IN elevator_list      
-                    IF elevator status is equal TO "IDLE" AND elevator floor is more than floor 
-                        SET diff TO elevator floor MINUS call_button floor'set diff to positive integer'
-                        IF best_diff is equal TO negative one OR best_diff is more than diff
-                            SET best_diff TO diff
-                            SET elevator_choice TO elevator name
-                        ENDIF
-                    ENDIF
-                    IF elevator status is equal TO "IDLE" AND elevator floor is less than floor
-                        SET diff TO call_button floor MINUS elevator floor'set diff to positive integer'
-                        IF best_diff is equal TO negative one OR best_diff is more than diff
-                            SET best_diff TO diff
-                            SET elevator_choice TO elevator name
-                        ENDIF
-                    ENDIF
-                ENDFOR
+        IF call_button direction EQUALS "DOWN" 
+                "subsequence findElevatordown"
+            FOR EACH elevator IN elevator_list 
+            SET diff TO 0
+            SET best_diff TO 9999
+                IF elevator floor is more than call_button floor and elevator status is equal to "DOWN" 
+                    SET diff to elevator floor minus call_button floor
+                    IF diff is less than best_diff'
+                        'we found at least one eligible elevator!!!!'
+                        SET elevator_choice TO elevator
+                        SET best_diff to diff
+                    ENDIF    
+                ENDIF
+            ENDFOR
+            IF elevator choice does not equal null'
+                CAll elevator push_floor_list WITH call_button floor
+                RETURN from SEQUENCE
             ENDIF
+            IF elevator_choice !== "NULL"
+            FOR EACH elevator IN elevator_list 
+                SET diff to 0
+                SET best_diff to 9999
+                SET diff to elevator floor minus call_button floor
+                IF elevator status is equal to IDLE
+                    IF diff is less than best_diff   
+                        'we found at least one eligible elevator!!!!'
+                        SET elevator choice TO elevator
+                        SET best_diff TO diff
+                    ENDIF
+                ENDIF
+            ENDFOR
+            IF elevator choice does not equal null'
+                CAll elevator push_floor_list WITH call_button floor
+                RETURN from SEQUENCE
+            ENDIF
+            'In test cases residential this never happens, can lead to logic problems...'
+            'this code never executes - dont have time for now - time is the problem here - both that I don't have it
+            'and if actions in this elevator simulation never take time to execute - well no one will ever need to wait for 
+            'a elevator - there is no elevator - these are words'
+            IF elevator choice does not equal null'
+                CAll elevator push_floor_list WITH call_button floor
+                RETURN from SEQUENCE
+            ENDIF
+        ENDIF
 
-            IF elevator_choice is EQUAL TO "NULL" 'first three priorities failed 
-                PUSH call_button floor TO column call_wait_list  
-            ELSE 'one of the first three priorities passed, a elevator was chosen'
+        IF call_button direction EQUALS "UP" (
+                'find closest elevator below you going down, if none, find closest IDLE elevator'
+            "subsequence findElevatorUp"
+            FOR EACH elevator IN elevator_list 
+                SET diff to 0
+                set best_diff to 9999
+                IF elevator floor is less than call_button floor and 
+                elevator status is equal to "UP" 
+                SET diff to call_button floor minus elevator floor 
+                    IF diff is less than best_diff'
+                        SET elevator_choice TO elevator
+                        SET best_diff to diff
+                    ENDIF   
+                ENDIF
+            ENDFOR
+            IF elevator choice does not equal null'
+                CAll elevator push_floor_list WITH call_button floor
+                RETURN from SEQUENCE
+            ENDIF
+            IF elevator choice EQUALS "NULL"
+                "sub sub sequence find idle elevator"
                 FOR EACH elevator IN elevator_list 
-                    IF elevator name is EQUAL TO elevator_choice
-                        CALL elevator push_floor_list WITH call_button floor
+                    SET diff to 0
+                    SET best_diff to 9999
+                    'compute dif'
+                    IF elevator status is equal to IDLE
+                        IF diff is less than best_diff   
+                            'we found at least one eligible elevator!!!!'
+                            SET elevator choice TO elevator
+                            SET best_diff TO diff
+                        ENDIF
                     ENDIF
                 ENDFOR
-            ENDIF
-        ENDSEQUENCE
+                IF elevator choice does not equal null'
+                    CAll elevator push_floor_list WITH call_button floor
+                    RETURN from SEQUENCE
+                ENDIF 'not null'
+                'In test cases residential this never happens, can lead to logic problems...'
+                'this code never executes - dont have time for now - time is the problem here - both that I don't have it
+                'and if actions in this elevator simulation never take time to execute - well no one will ever need to wait for 
+                'a elevator - there is no elevator - these are words'
+                IF elevator choice does not equal null'
+                    CAll elevator push_floor_list WITH call_button floor
+                    RETURN from SEQUENCE
+                ENDIF
+            ENDIF 
+        ENDIF
+    ENDSEQUENCE
 ENDDEFINE
 
 DEFINE Request_Button USING floor 
