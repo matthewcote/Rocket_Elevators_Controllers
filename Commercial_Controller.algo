@@ -1,8 +1,9 @@
-DEFINE Floor_Display USING display_number
+DEFINE Floor_Display USING display_number AND display_direction
     display_number: display_number
-    
-    SEQUENCE set_display_number USING floor
-        SET display_number TO floor 
+    display_direction: direction
+    SEQUENCE set_display USING floor and direction
+        SET display_number TO floor
+        SET dispaly_direction TO direction
     ENDSEQUENCE
 ENDDEFINE
 
@@ -119,30 +120,32 @@ DEFINE Elevator USING num AND bottom_floor AND top_floor AND origin
     END SEQUENCE
 
     SEQUENCE move 
+        CALL elevator floor_display set_display WITH current_floor AND status
         SET direction TO "NULL"
             IF floor IS EQUAL TO current_floor
                 REMOVE floor FROM floor_list
                 CALL stop 
-            ELSE 'determine direction'
+            ELSE 
                 IF direction IS EQUAL TO "NULL" AND IF floor IS LESS THAN current_floor
                     SET direction TO "DOWN"
                     SET status TO direction
+                    CALL elevator floor_display set_display WITH current_floor AND status
                     INCREMENT current_floor by negative 1 
-                    CALL elevator move 
+                    CALL move 
                 ENDIF
                 IF direction IS EQUAL TO "NULL" AND IF floor IS MORE THAN current_floor
                     SET direction to "UP"
                     SET status TO direction
+                    CALL elevator floor_display set_display WITH current_floor AND status
                     INCREMENT current_floor TO elevator by 1 
                     CALL move
                 ENDIF
             ENDIF
-        SET status to "IDLE"
     ENDSEQUENCE
 
     SEQUENCE stop 
         CALL open_door 
-        
+        CALL elevator floor_display set_display WITH current_floor AND status
         FOR EACH request_button in request_button_list
             IF request_button floor is equal to current_floor
                 SET request_button status TO "IDLE"
@@ -150,10 +153,13 @@ DEFINE Elevator USING num AND bottom_floor AND top_floor AND origin
         ENDFOR
         
         CALL wait 
+
+        CALL close_door
             
         IF floor_list IS EMPTY
             IF colum call_list is EMPTY
                 SET status TO "IDLE"
+                CALL elevator floor_display set_display WITH current_floor AND status
             ELSE
                 FOR EACH floor IN column call_list
                     PUSH floor TO elevator floor_list 
@@ -163,13 +169,11 @@ DEFINE Elevator USING num AND bottom_floor AND top_floor AND origin
         ELSE
             CALL move 
         ENDIF
-
     ENDSEQUENCE
 
     SEQUENCE wait 'USING x
         'TODO - can add a wait variable to be set when initializing column or change to like 3 seconds'
         WAIT x seconds
-        CALL close_door 
     ENDSEQUENCE
 ENDDEFINE
 
