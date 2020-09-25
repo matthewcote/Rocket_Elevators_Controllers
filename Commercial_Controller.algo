@@ -173,7 +173,7 @@ DEFINE Elevator USING num AND bottom_floor AND top_floor AND origin
 
     SEQUENCE wait 'USING x
         'TODO - can add a wait variable to be set when initializing column or change to like 3 seconds'
-        WAIT x seconds
+        'WAIT x seconds
     ENDSEQUENCE
 ENDDEFINE
 
