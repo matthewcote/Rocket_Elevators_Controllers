@@ -144,6 +144,7 @@ DEFINE Call_Button USING floor AND direction
                 CAll elevator push_floor_list WITH call_button floor
                 RETURN from SEQUENCE
             ENDIF
+            
             IF elevator_choice !== "NULL"
             FOR EACH elevator IN elevator_list 
                 SET diff to 0
@@ -151,7 +152,6 @@ DEFINE Call_Button USING floor AND direction
                 SET diff to elevator floor minus call_button floor
                 IF elevator status is equal to IDLE
                     IF diff is less than best_diff   
-                        'we found at least one eligible elevator!!!!'
                         SET elevator choice TO elevator
                         SET best_diff TO diff
                     ENDIF
@@ -161,18 +161,9 @@ DEFINE Call_Button USING floor AND direction
                 CAll elevator push_floor_list WITH call_button floor
                 RETURN from SEQUENCE
             ENDIF
-            'In test cases residential this never happens, can lead to logic problems...'
-            'this code never executes - dont have time for now - time is the problem here - both that I don't have it
-            'and if actions in this elevator simulation never take time to execute - well no one will ever need to wait for 
-            'a elevator - there is no elevator - these are words'
-            IF elevator choice does not equal null'
-                CAll elevator push_floor_list WITH call_button floor
-                RETURN from SEQUENCE
-            ENDIF
         ENDIF
 
         IF call_button direction EQUALS "UP" (
-                'find closest elevator below you going down, if none, find closest IDLE elevator'
             "subsequence findElevatorUp"
             FOR EACH elevator IN elevator_list 
                 SET diff to 0
@@ -209,15 +200,12 @@ DEFINE Call_Button USING floor AND direction
                     RETURN from SEQUENCE
                 ENDIF 'not null'
                 'In test cases residential this never happens, can lead to logic problems...'
-                'this code never executes - dont have time for now - time is the problem here - both that I don't have it
-                'and if actions in this elevator simulation never take time to execute - well no one will ever need to wait for 
-                'a elevator - there is no elevator - these are words'
                 IF elevator choice does not equal null'
-                    CAll elevator push_floor_list WITH call_button floor
+                    CAll elevator push_floor_list WITH call_button floor //
                     RETURN from SEQUENCE
                 ENDIF
             ENDIF 
-        ENDIF
+        ENDIF 'up'
     ENDSEQUENCE
 ENDDEFINE
 
