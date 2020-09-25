@@ -96,15 +96,13 @@ DEFINE Elevator USING num AND bottom_floor AND top_floor AND origin
     current_floor: origin,
     door_list: SET TO EMPTY List,
     floor_list: SET TO EMPTY List,
-    edoor: SET edoor TO INSTATIATE Edoor
+    elevator_door: SET elevator_door TO INSTATIATE Elevator_Door
     floor_display: SET Floor_Display TO INSTATIATE Floor_Display WITH current_floor
     SET door TO INSTANTIATE Door WITH origin
     PUSH door TO door_list 
     
     SET floor TO bottom_floor
     WHILE floor is less than or equal to top_floor
-        SET request_button TO INSTANTIATE Request_Button WITH floor
-        PUSH request_button TO request_button_list
         SET door TO INSTANTIATE Door WITH floor
         PUSH door TO door_list
         INCREMENT floor
@@ -119,7 +117,7 @@ DEFINE Elevator USING num AND bottom_floor AND top_floor AND origin
         set TODO
     END SEQUENCE
 
-    SEQUENCE move 
+    SEQUENCE move 'should take time'
         CALL elevator floor_display set_display WITH current_floor AND status
         SET direction TO "NULL"
             IF floor IS EQUAL TO current_floor
@@ -144,17 +142,12 @@ DEFINE Elevator USING num AND bottom_floor AND top_floor AND origin
     ENDSEQUENCE
 
     SEQUENCE stop 
-        CALL open_door 
+        CALL open_doors
         CALL elevator floor_display set_display WITH current_floor AND status
-        FOR EACH request_button in request_button_list
-            IF request_button floor is equal to current_floor
-                SET request_button status TO "IDLE"
-            ENDIF
-        ENDFOR
         
         CALL wait 
 
-        CALL close_door
+        CALL close_doors
             
         IF floor_list IS EMPTY
             IF colum call_list is EMPTY
@@ -171,23 +164,41 @@ DEFINE Elevator USING num AND bottom_floor AND top_floor AND origin
         ENDIF
     ENDSEQUENCE
 
-    SEQUENCE wait 'USING x
+    SEQUENCE wait 'time
         'TODO - can add a wait variable to be set when initializing column or change to like 3 seconds'
         'WAIT x seconds
     ENDSEQUENCE
+
+    SEQUENCE close_doors USING floor
+        CALL elevator_door close_door
+        FOR EACH door in door_list
+            IF door floor is equal to floor
+                call door close_door
+            END IF
+        ENDFOR
+    ENDSEQUENCE
+
+    SEQUENCE open_doors USING floor
+        CALL elevator_door open_door
+        FOR EACH door in door_list
+            IF door floor is equal to floor
+                call door open_door
+            END IF
+        ENDFOR
+    ENDSEQUENCE
 ENDDEFINE
 
-DEFINE Column USING bottom_floor AND top_floor AND elevator_num AND ORIGIN
+DEFINE Column USING bottom_floor AND top_floor AND elevator_num AND origin
     elevator_list: SET TO EMPTY List,
     call_button_list: SET TO EMPTY List,
     bottom_floor: bottom_floor,
     top_floor: top_floor,
     elevator_num: elevator_num,
     origin: origin
-    call fill_elevator_list,
-    call fill_call_button_list WITH bottom_floor AND top_floor,
+    CALL fill_elevator_list,
+    CALL fill_call_button_list WITH bottom_floor AND top_floor,
 
-    SEQUENCE fill_elevator_list 
+    SEQUENCE fill_elevator_list USING bottom_floor AND top_floor AND origin
         SET num TO 0
         WHILE num is less than or equal TO elevator_num 
             SET elevator TO INSTANTIATE Elevator WITH num AND bottom_floor AND top_floor AND origin
@@ -204,17 +215,90 @@ DEFINE Column USING bottom_floor AND top_floor AND elevator_num AND ORIGIN
             INCREMENT floor
         ENDWHILE
     ENDSEQUENCE
-ENDDEFINE
 
-DEFINE Battery USING origin
-    column_list: SET TO EMPTY List,
-    origin: origin
-
-    SEQUENCE add_column USING bottom_floor AND top_floor AND elevator_num
-        SET column TO INSTANTIATE Column USING bottom_floor AND top_floor AND elevator_num
-        SET column origin TO origin
+    SEQUENCE choose_elevator USING floor and elevator_list
+                SET call_button status TO "ACTIVE" 
+        SET elevator_choice to "NULL"
+        SET diff TO 0
+        SET best_diff TO 9999
+        FOR EACH elevator IN elevator_list 
+            IF elevator floor is more than floor and elevator status is equal to "DOWN" 
+                SET diff to elevator floor minus floor
+                IF diff is less than best_diff'
+                    SET elevator_choice TO elevator
+                    SET best_diff to diff
+                ENDIF    
+            ENDIF
+        ENDFOR
+        IF elevator choice does not equal "NULL"
+            CAll elevator push_floor_list WITH floor
+            RETURN FROM SEQUENCE
+        ENDIF
+        FOR EACH elevator IN elevator_list 
+            IF elevator status is equal to IDLE
+                IF elevator floor IS MORE THAN floor
+                    SET diff TO elevator floor minus floor
+                        IF diff is less than best_diff   
+                            SET elevator choice TO elevator
+                            SET best_diff TO diff
+                        ENDIF
+                    ENDIF
+                ENDIF
+                IF elevator floor IS LESS THAN floor
+                    SET diff TO floor minus elevator_floor
+                        IF diff is less than best_diff   
+                            SET elevator choice TO elevator
+                            SET best_diff TO diff
+                        ENDIF
+                    ENDIF
+                ENDIF
+            ENDIF
+        ENDFOR
+        IF elevator choice does not equal "NULL"
+            CAll elevator push_floor_list WITH floor 
+            RETURN from SEQUENCE
+        ENDIF
     ENDSEQUENCE
 ENDDEFINE
+
+DEFINE Battery USING origin 
+    column_list: SET TO EMPTY List,
+    origin: origin
+    INIT battery_control as EMPTY object
+
+    SEQUENCE add_column USING bottom_floor AND top_floor AND elevator_num AND origin
+        SET column TO INSTANTIATE Column USING bottom_floor AND top_floor AND elevator_num 
+        SET column origin TO origin
+        PUSH column to column_list
+    ENDSEQUENCE
+
+    SEQUENCE set_battery_control USING column_list AND origin
+        SET battery_control TO INSTANTIATE Battery_Control WITH column_list
+    ENDSEQUENCE
+
+    SEQUENCE choose_column USING floor
+        CALL column choose_elevator WITH floor
+    ENDSEQUENCE
+ENDDEFINE
+
+DEFINE Battery_Control USING column_list AND origin
+    column_list: column_list
+    set welcome TO "WELCOME - WHAT FLOOR WOULD YOU LIKE TO GO TO"
+    control_dispay: welcome
+    SET floor_display_list TO EMPTY list 
+
+    SEQUENCE input_number USING number 
+    ENDSEQUENCE
+
+    SEQUENCE input_call_elevator USING floor
+        CALL battery choose_column WITH floor
+    ENDSEQUENCE
+ENDDEFINE
+
+'Test Scenarios - Corporate'
+
+SET battery TO INSTANTIATE Battery WITH 1
+CALL battery add_column WITH -1 AND -1 AND 3 AND
 
 SET column1 TO INSTANTIATE Column WITH 10 AND 2 'creates a column named residential, with 10 floors, and 2 elevators'
 CALL column1 SEQUENCE fill_elevator_list WITH column1 elevator_num
