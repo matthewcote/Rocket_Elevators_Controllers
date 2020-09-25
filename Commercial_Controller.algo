@@ -1,29 +1,198 @@
-DEFINE Battery
-    column_list: SET TO EMPTY List,
-
-        SEQUENCE push_column_list USING column_operation_mode, origin_floor, bottom_working_floor, number_of_working_floors
-            SET column TO INSTANTIATE 
-        ENDSEQUENCE
+DEFINE Floor_Display USING display_number
+    display_number: display_number
+    
+    SEQUENCE set_display_number USING floor
+        SET display_number TO floor 
+    ENDSEQUENCE
 ENDDEFINE
 
-DEFINE ModernColumn USING origin AND bottom_floor AND top_floor AND elevator_num
+DEFINE Elevator_Door 
+    SET door_status TO "ClOSED"
+
+    SEQUENCE open_door
+        SET door_status TO "OPEN"
+    ENDSEQUENCE
+
+    SEQUENCE close_door 
+        SET door_status TO "CLOSED"
+    ENDSEQUENCE
+    SEQUENCE elevator_door_alert 
+        CALL open_door
+        CALL wait
+    ENDSEQUENCE   
+ENDDEFINE
+
+DEFINE Door USING floor 
+    floor:  floor,
+    status: "IDLE" 
+    SEQUENCE open_door
+        SET door_status TO "OPEN"
+    ENDSEQUENCE
+
+    SEQUENCE close_door 
+        SET door_status TO "CLOSED"
+    ENDSEQUENCE
+    SEQUENCE elevator_door_alert 
+
+        CALL open_door
+        CALL wait
+    ENDSEQUENCE
+    'TODO'
+ENDDEFINE
+
+DEFINE Call_Button USING floor
+    floor:  floor,
+    status: "IDLE" 
+    SEQUENCE call_button_pushed USING elevator_list
+        SET call_button status TO "ACTIVE" 
+        SET elevator_choice to "NULL"
+        SET diff TO 0
+        SET best_diff TO 9999
+        FOR EACH elevator IN elevator_list 
+            IF elevator floor is more than call_button floor and elevator status is equal to "DOWN" 
+                SET diff to elevator floor minus call_button floor
+                IF diff is less than best_diff'
+                    SET elevator_choice TO elevator
+                    SET best_diff to diff
+                ENDIF    
+            ENDIF
+        ENDFOR
+        IF elevator choice does not equal "NULL"
+            CAll elevator push_floor_list WITH call_button floor
+            RETURN FROM SEQUENCE
+        ENDIF
+        FOR EACH elevator IN elevator_list 
+            IF elevator status is equal to IDLE
+                IF elevator floor IS MORE THAN call_button floor
+                    SET diff TO elevator floor minus call_button floor
+                        IF diff is less than best_diff   
+                            SET elevator choice TO elevator
+                            SET best_diff TO diff
+                        ENDIF
+                    ENDIF
+                ENDIF
+                IF elevator floor IS LESS THAN call_button floor
+                    SET diff TO call_button floor minus elevator_floor
+                        IF diff is less than best_diff   
+                            SET elevator choice TO elevator
+                            SET best_diff TO diff
+                        ENDIF
+                    ENDIF
+                ENDIF
+            ENDIF
+        ENDFOR
+        IF elevator choice does not equal "NULL"
+            CAll elevator push_floor_list WITH call_button floor 
+            RETURN from SEQUENCE
+        ENDIF
+    ENDSEQUENCE
+ENDDEFINE
+
+DEFINE Elevator USING num AND bottom_floor AND top_floor AND origin
+    name: num,
+    status: "IDLE",
     origin: origin,
+    current_floor: origin,
+    door_list: SET TO EMPTY List,
+    floor_list: SET TO EMPTY List,
+    edoor: SET edoor TO INSTATIATE Edoor
+    floor_display: SET Floor_Display TO INSTATIATE Floor_Display WITH current_floor
+    SET door TO INSTANTIATE Door WITH origin
+    PUSH door TO door_list 
+    
+    SET floor TO bottom_floor
+    WHILE floor is less than or equal to top_floor
+        SET request_button TO INSTANTIATE Request_Button WITH floor
+        PUSH request_button TO request_button_list
+        SET door TO INSTANTIATE Door WITH floor
+        PUSH door TO door_list
+        INCREMENT floor
+    ENDWHILE
+
+    SEQUENCE push_floor_list USING floor 
+        push floor TO floor_list 
+        CALL move 
+    END SEQUENCE
+
+    SEQUENCE go_to_origin
+        set TODO
+    END SEQUENCE
+
+    SEQUENCE move 
+        SET direction TO "NULL"
+            IF floor IS EQUAL TO current_floor
+                REMOVE floor FROM floor_list
+                CALL stop 
+            ELSE 'determine direction'
+                IF direction IS EQUAL TO "NULL" AND IF floor IS LESS THAN current_floor
+                    SET direction TO "DOWN"
+                    SET status TO direction
+                    INCREMENT current_floor by negative 1 
+                    CALL elevator move 
+                ENDIF
+                IF direction IS EQUAL TO "NULL" AND IF floor IS MORE THAN current_floor
+                    SET direction to "UP"
+                    SET status TO direction
+                    INCREMENT current_floor TO elevator by 1 
+                    CALL move
+                ENDIF
+            ENDIF
+        SET status to "IDLE"
+    ENDSEQUENCE
+
+    SEQUENCE stop 
+        CALL open_door 
+        
+        FOR EACH request_button in request_button_list
+            IF request_button floor is equal to current_floor
+                SET request_button status TO "IDLE"
+            ENDIF
+        ENDFOR
+        
+        CALL wait 
+            
+        IF floor_list IS EMPTY
+            IF colum call_list is EMPTY
+                SET status TO "IDLE"
+            ELSE
+                FOR EACH floor IN column call_list
+                    PUSH floor TO elevator floor_list 
+                ENDFOR
+                CALL move 
+            ENDIF
+        ELSE
+            CALL move 
+        ENDIF
+
+    ENDSEQUENCE
+
+    SEQUENCE wait 'USING x
+        'TODO - can add a wait variable to be set when initializing column or change to like 3 seconds'
+        WAIT x seconds
+        CALL close_door 
+    ENDSEQUENCE
+ENDDEFINE
+
+DEFINE Column USING bottom_floor AND top_floor AND elevator_num AND ORIGIN
+    elevator_list: SET TO EMPTY List,
+    call_button_list: SET TO EMPTY List,
     bottom_floor: bottom_floor,
     top_floor: top_floor,
     elevator_num: elevator_num,
-    elevator_list: SET TO EMPTY List,
-    call_button_list: SET TO EMPTY List,
+    origin: origin
+    call fill_elevator_list,
+    call fill_call_button_list WITH bottom_floor AND top_floor,
 
     SEQUENCE fill_elevator_list 
-        SET num TO 1
+        SET num TO 0
         WHILE num is less than or equal TO elevator_num 
-            SET elevator TO INSTANTIATE Elevator WITH num
+            SET elevator TO INSTANTIATE Elevator WITH num AND bottom_floor AND top_floor AND origin
             PUSH elevator TO elevator_list 
             INCREMENT num
         ENDWHILE
     ENDSEQUENCE
 
-    SEQUENCE fill_call_button_list USING floor_num
+    SEQUENCE fill_call_button_list USING bottom_floor AND top_floor,
         SET floor TO bottom_floor
         WHILE floor is less than or equal TO top_floor
             SET call_button TO INSTANTIATE Call_Button USING floor 
@@ -31,11 +200,18 @@ DEFINE ModernColumn USING origin AND bottom_floor AND top_floor AND elevator_num
             INCREMENT floor
         ENDWHILE
     ENDSEQUENCE
-
 ENDDEFINE
 
-DEFINE ModernElevator USING num
+DEFINE Battery USING origin
+    column_list: SET TO EMPTY List,
+    origin: origin
 
-    set something
-    'TODO'
+    SEQUENCE add_column USING bottom_floor AND top_floor AND elevator_num
+        SET column TO INSTANTIATE Column USING bottom_floor AND top_floor AND elevator_num
+        SET column origin TO origin
+    ENDSEQUENCE
 ENDDEFINE
+
+SET column1 TO INSTANTIATE Column WITH 10 AND 2 'creates a column named residential, with 10 floors, and 2 elevators'
+CALL column1 SEQUENCE fill_elevator_list WITH column1 elevator_num
+CALL column1 SEQUENCE fill_call_button_list WITH column1 floor_num
