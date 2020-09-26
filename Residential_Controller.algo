@@ -61,7 +61,6 @@ DEFINE Request_Button USING floor
                 RETURN
             ENDIF
         ENDIF   
-        'TODO - now I think we got someone pushed a button they shouldn't have - stop elevator, lock door, play music'
     ENDSEQUENCE
 ENDDEFINE
 
@@ -134,6 +133,7 @@ DEFINE Call_Button USING floor AND direction
             ENDIF     
         ENDIF 
     ENDSEQUENCE
+
 ENDDEFINE
 
 DEFINE Elevator USING num AND floor_num
@@ -253,6 +253,58 @@ DEFINE Column USING floor_num AND elevator_num
             ENDIF
             INCREMENT floor
         ENDWHILE
+    ENDSEQUENCE
+
+    SEQUENCE choose_elevator USING floor and elevator_list
+        SET call_button status TO "ACTIVE" 
+        SET elevator_choice to "NULL"
+        SET diff TO 0
+        SET best_diff TO 9999
+        FOR EACH elevator IN elevator_list 
+            IF elevator floor is more than floor and elevator status is equal to "DOWN" 
+                SET diff to elevator floor minus floor
+                IF diff is less than best_diff
+                    SET elevator_choice TO elevator
+                    SET best_diff to diff
+                ENDIF    
+            ENDIF
+        ENDFOR
+        IF elevator choice does not equal "NULL"
+            CAll elevator push_floor_list WITH floor
+            RETURN FROM SEQUENCE
+        ENDIF
+        FOR EACH elevator IN elevator_list 
+            IF elevator status is equal to IDLE
+                IF elevator floor IS MORE THAN floor
+                    SET diff TO elevator floor minus floor
+                        IF diff is less than best_diff   
+                            SET elevator choice TO elevator
+                            SET best_diff TO diff
+                        ENDIF
+                    ENDIF
+                ENDIF
+                IF elevator floor IS LESS THAN floor
+                    SET diff TO floor minus elevator_floor
+                        IF diff is less than best_diff   
+                            SET elevator choice TO elevator
+                            SET best_diff TO diff
+                        ENDIF
+                    ENDIF
+                ENDIF
+            ENDIF
+        ENDFOR
+        IF elevator choice does not equal "NULL"
+            CAll elevator push_floor_list WITH floor 
+            RETURN from SEQUENCE
+        ENDIF
+    ENDSEQUENCE
+
+    SEQUENCE push_call_button USING floor and direction
+        FOR EACH call_button IN call_button_list
+            IF call_button floor is equal to floor and call_button direction is equal to direction
+                Call call_button call_button_pushed WITH elevator_list
+            ENDIF
+        ENDFOR
     ENDSEQUENCE
 ENDDEFINE
 

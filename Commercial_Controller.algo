@@ -217,7 +217,7 @@ DEFINE Column USING bottom_floor AND top_floor AND elevator_num AND origin
     ENDSEQUENCE
 
     SEQUENCE choose_elevator USING floor and elevator_list
-                SET call_button status TO "ACTIVE" 
+        SET call_button status TO "ACTIVE" 
         SET elevator_choice to "NULL"
         SET diff TO 0
         SET best_diff TO 9999
@@ -259,6 +259,15 @@ DEFINE Column USING bottom_floor AND top_floor AND elevator_num AND origin
             RETURN from SEQUENCE
         ENDIF
     ENDSEQUENCE
+
+    SEQUENCE push_call_button USING floor and direction
+        FOR EACH call_button IN call_button_list
+            IF call_button floor is equal to floor and call_button direction is equal to direction
+                Call call_button call_button_pushed WITH elevator_list
+            ENDIF
+        ENDFOR
+    ENDSEQUENCE
+
 ENDDEFINE
 
 DEFINE Battery USING origin 
