@@ -216,7 +216,7 @@ DEFINE Column USING bottom_floor AND top_floor AND elevator_num AND origin
         ENDWHILE
     ENDSEQUENCE
 
-    SEQUENCE choose_elevator USING floor and elevator_list
+    SEQUENCE choose_elevator USING floor RETURNING elevator_name
         SET call_button status TO "ACTIVE" 
         SET elevator_choice to "NULL"
         SET diff TO 0
@@ -232,7 +232,7 @@ DEFINE Column USING bottom_floor AND top_floor AND elevator_num AND origin
         ENDFOR
         IF elevator choice does not equal "NULL"
             CAll elevator push_floor_list WITH floor
-            RETURN FROM SEQUENCE
+                RETURN elevator
         ENDIF
         FOR EACH elevator IN elevator_list 
             IF elevator status is equal to IDLE
@@ -256,7 +256,7 @@ DEFINE Column USING bottom_floor AND top_floor AND elevator_num AND origin
         ENDFOR
         IF elevator choice does not equal "NULL"
             CAll elevator push_floor_list WITH floor 
-            RETURN from SEQUENCE
+            RETURN elevator
         ENDIF
     ENDSEQUENCE
 
@@ -267,7 +267,6 @@ DEFINE Column USING bottom_floor AND top_floor AND elevator_num AND origin
             ENDIF
         ENDFOR
     ENDSEQUENCE
-
 ENDDEFINE
 
 DEFINE Battery USING origin 
@@ -285,8 +284,13 @@ DEFINE Battery USING origin
         SET battery_control TO INSTANTIATE Battery_Control WITH column_list
     ENDSEQUENCE
 
-    SEQUENCE choose_column USING floor
-        CALL column choose_elevator WITH floor
+    SEQUENCE choose_column USING floor RETURNING elevator_name and column_name
+        FOR EACH column in column_list
+            IF floor is more than or equal to bottom floor AND less than or equal to the top_floor
+                SET elevator_name TO CALL column choose_elevator USING floor
+                RETURN elevator_name and column_name
+            ENDIF
+        END FOR
     ENDSEQUENCE
 ENDDEFINE
 
@@ -300,15 +304,18 @@ DEFINE Battery_Control USING column_list AND origin
     ENDSEQUENCE
 
     SEQUENCE input_call_elevator USING floor
-        CALL battery choose_column WITH floor
+        SET battery choose_column WITH floor
+        SET WELCOME TO "Proceed to " + elevator name + " at " + column_name
     ENDSEQUENCE
 ENDDEFINE
 
 'Test Scenarios - Corporate'
 
 SET battery TO INSTANTIATE Battery WITH 1
-CALL battery add_column WITH -1 AND -1 AND 3 AND
+CALL battery add_column WITH -6 AND -1 AND 1
+CALL battery add_column WITH 2 AND 20 AND 1
+CALL battery add_column WITH 21 AND 40 AND 1
+CALL battery add_column WITH 41 AND 60 AND 1
 
-SET column1 TO INSTANTIATE Column WITH 10 AND 2 'creates a column named residential, with 10 floors, and 2 elevators'
-CALL column1 SEQUENCE fill_elevator_list WITH column1 elevator_num
-CALL column1 SEQUENCE fill_call_button_list WITH column1 floor_num
+
+

@@ -308,9 +308,25 @@ DEFINE Column USING floor_num AND elevator_num
     ENDSEQUENCE
 ENDDEFINE
 
-SET column1 TO INSTANTIATE Column WITH 10 AND 2 'creates a column named residential, with 10 floors, and 2 elevators'
-CALL column1 SEQUENCE fill_elevator_list WITH column1 elevator_num
-CALL column1 SEQUENCE fill_call_button_list WITH column1 floor_num
+SET column1 TO INSTANTIATE Column WITH 10 AND 2 'creates a column with 10 floors, and 2 elevators'
+
+'SCENARIO 1'
+SET column1 elevator_list first element current_floor attribute to 2 
+SET column1 elevator_list second element current_floor attribute to 6
+CALL column1 push_call_button WITH 3 AND "UP"
+CALL column1 elevator_list[first element] push_floor_list WITH 7
+
+'SCENARIO 2'
+
+SET column1 elevator_list first element current_floor attribute to 10 
+SET column1 elevator_list second element current_floor attribute to 3
+CALL column1 push_call_button WITH 1 AND "UP"
+CALL column1 elevator_list[second element] push_floor_list WITH 6
+
+CALL column1 push_call_button WITH 3 AND "UP"
+CALL column1 elevator_list[second element] push_floor_list WITH 5
+
+CALL column1 push_call_button WITH 9 AND "DOWN"
+CALL column1 elevator_list[second element] push_floor_list WITH 6
 
 
-    
