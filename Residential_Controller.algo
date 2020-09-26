@@ -43,7 +43,7 @@ DEFINE Request_Button USING floor
     floor: floor,
     status: "IDLE"
 
-    SEQUENCE request_button_pushed USING status
+    SEQUENCE request_button_pushed USING floor
         SET request_button status TO "ACTIVE"
         IF elevator status is "IDLE"
             CALL elevator push_floor_list WITH floor
