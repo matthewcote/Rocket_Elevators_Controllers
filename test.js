@@ -54,11 +54,14 @@ class Edoor { // DEFINE Edoor
 ///////////////////////////-  Floor Display  -//////////////////////////////////////////
 
 class Floor_Display { // DEFINE Floor_Display
-    constructor(display_number) { //USING number
+    constructor(display_number, display_direction) { //USING number
         this.display_number = display_number; // SET display_number TO floor
+        this.display_direction = display_direction;
     }
-    set_display_number(floor) { // SEQUENCE set_display_number USING floor
+    set_display_number(floor, direction) { // SEQUENCE set_display_number USING floor
         this.display_number = floor; // SET display_number TO floor
+        this.display_direction = direction;
+        console("Floor Display : Display Number: " + this.display_number + "  Direction: " + this.display_direction);
     } // ENDSEQUENCE
 }  // ENDDEFINE
 
@@ -91,40 +94,24 @@ class Elevator { // DEFINE Elevator
 		} // ENDWHILE
     }
     call_elevator(floor){
-		console.log("Call called on Elevator!")
-		console.log("this.name = " + this.name)
-		console.log("this.status = " + this.status)
-		console.log("this.current_floor = " + this.current_floor)
+
 		if (floor === this.current_floor){
 			this.status = "IDLE" //TODO - put this into a function
-			console.log("Already Here")// time - maybe things happen here
-			console.log("this.name = " + this.name)
-			console.log("this.status = " + this.status)
-			console.log("this.current_floor = " + this.current_floor)
 			return;
 		}
 		if (floor > this.current_floor){
 			this.status = "UP"
-			console.log("MOVING UP")// time - maybe things happen here
 			this.current_floor = floor;
 			this.status = "IDLE" //TODO - put this into a function
-			console.log("this.name = " + this.name)
-			console.log("this.status = " + this.status)
-			console.log("this.current_floor = " + this.current_floor)
 			return;
 		}
 		if (floor < this.current_floor){
 			this.status = "DOWN"
-			console.log("MOVING DOWN")// time - maybe things happen here
 			this.current_floor = floor;
 			this.status = "IDLE" //TODO - put this into a function
-			console.log("this.name = " + this.name)
-			console.log("this.status = " + this.status)
-			console.log("this.current_floor = " + this.current_floor)
 			return;
 		}
 	}
-	
 	push_floor_list(floor) {
         // push floor TO floor_list 
         this.floor_list.push(floor);
@@ -175,18 +162,7 @@ class Elevator { // DEFINE Elevator
         this.wait();
         
         if (this.floor_list.length === 0) {// IF floor_list IS EMPTY
-        /*
-            // TODO : I don't like the column floor_list
-            IF colum call_list is EMPTY
-                SET status TO "IDLE"
-                TODO - ORIGIN LOGIC UPGRADE'
-            ELSE
-                FOR EACH floor IN column call_list
-                    PUSH floor TO elevator floor_list
-                ENDFOR
-                CALL move
-            ENDIF
-        */
+
         } else { // ELSE
             this.move();
         } //ENDIF
@@ -283,16 +259,15 @@ class Call_Button { // DEFINE Call_Button
 				} 
 			} //ENDIF
         } // ENDELSE ' call button direction equals up'
-	}; // ENDSEQUENCE
-		
+	}; // ENDSEQUENCE		
 	
 } // ENDDEFINE
 
 /////////////////////////-   Column    -///////////////////////////////////////////
 
 class Column { // DEFINE Column USING floor_num AND elevator_num 
-    constructor(mode, floor_num, elevator_num) { // USING mode AND floor_num AND elevator_num 
-        this.mode = mode; //column_operation_mode: column_operation_mode,
+    constructor(floor_num, elevator_num) { // USING mode AND floor_num AND elevator_num 
+
         this.floor_num = floor_num; //   floor_num: floor_num,
         this.elevator_num = elevator_num; //   floor_num: floor_num,
         this.elevator_list = []; //  elevator_list: SET TO EMPTY List,
@@ -321,18 +296,87 @@ class Column { // DEFINE Column USING floor_num AND elevator_num
             } // ENDIF
 		} // ENDWHILE
     } // END SEQUENCE
+    LookIdle(floor) {
+        var elevator_choice = "NULL";
+        var diff = 0; // SET diff TO 0
+        var best_diff = 999; // SET best_diff TO 9999
+        for (var i = 0; i < this.elevator_list.length; i++){ // FOR EACH elevator IN elevator_list 
+            if (this.elevator_list[i].status === "IDLE") {  // IF elevator floor is more than call_button floor and elevator status is equal to "DOWN" 
+                diff = Math.abs(this.elevator_list[i].floor - floor); // SET diff to elevator floor minus call_button floor
+                if (diff < best_diff) { // IF diff is less than best_diff'
+                    elevator_choice = i;  //  SET elevator_choice TO elevator
+                    best_diff = diff;// SET best_diff to diff
+                } // ENDIF    
+            } // ENDIF
+        }
+        if (elevator_choice !== "NULL") { // IF elevator choice does not equal null'
+				this.elevator_list[elevator_choice].call_elevator(floor)// CAll elevator push_floor_list WITH call_button floor
+                return; // RETURN from SEQUENCE
+        }
+    }
+    LookUp(floor) {
+        var elevator_choice = "NULL";
+        var diff = 0; // SET diff TO 0
+        var best_diff = 999; // SET best_diff TO 9999
+        for (var i = 0; i < this.elevator_list.length; i++){ // FOR EACH elevator IN elevator_list 
+            if (this.elevator_list[i].floor > floor && this.elevator_list[i].status === "DOWN") {  
+                diff = Math.abs(this.elevator_list[i].floor - floor); // SET diff to elevator floor minus call_button floor
+                if (diff < best_diff) { // IF diff is less than best_diff'
+                    elevator_choice = i;  //  SET elevator_choice TO elevator
+                    best_diff = diff;// SET best_diff to diff
+                } // ENDIF    
+            } // ENDIF           
+        }
+        if (elevator_choice !== "NULL") { // IF elevator choice does not equal null'
+				this.elevator_list[elevator_choice].call_elevator(floor)// CAll elevator push_floor_list WITH call_button floor
+                return; // RETURN from SEQUENCE
+        }
+
+    }
+    LookDown(floor) {
+        var elevator_choice = "NULL";
+        var diff = 0; // SET diff TO 0
+        var best_diff = 999; // SET best_diff TO 9999
+        for (var i = 0; i < this.elevator_list.length; i++){ // FOR EACH elevator IN elevator_list 
+            if (this.elevator_list[i].floor < floor && this.elevator_list[i].status === "UP") {  
+                diff = elevator_list[i].floor - this.floor; // SET diff to elevator floor minus call_button floor
+                if (diff < best_diff) { // IF diff is less than best_diff'
+                    elevator_choice = i;  //  SET elevator_choice TO elevator
+                    best_diff = diff;// SET best_diff to diff
+                } // ENDIF    
+            } // ENDIF
+        }
+        if (elevator_choice !== "NULL") { // IF elevator choice does not equal null'
+				this.elevator_list[elevator_choice].call_elevator(floor)// CAll elevator push_floor_list WITH call_button floor
+                return; // RETURN from SEQUENCE
+        }
+
+    }
+    RequestElevator(RequestedFloor, Direction) {
+        if (Direction == "DOWN") {
+            LookDown(RequestedFloor)
+        }
+        if (Direction == "UP") {
+            LookUp(RequestedFloor)
+        }
+    }
+    RequestFloor(Elevator, RequestedFloor) {
+
+    }
+
 } //ENDDEFINE
 
 ///////////////////////////////////////////////////////////////////////////////////////
 		
-		var column = new Column("STANDARD", 10, 2);
+        var column = new Column(10, 2);
+        console.log("created column")
 		column.elevator_list[0].current_floor = "2";
 		column.elevator_list[0].status = "IDLE";
 
 		column.elevator_list[1].current_floor = "6";
 		column.elevator_list[1].status = "IDLE";
 
-		var column2 = new Column("STANDARD", 10, 2);
+		var column2 = new Column(10, 2);
 		column.elevator_list[0].current_floor = "10";
 		column.elevator_list[0].status = "IDLE";
 
