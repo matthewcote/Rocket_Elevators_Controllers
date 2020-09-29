@@ -215,7 +215,7 @@ class Column:
         else:
             self.findIdle(floor)
         for call_button in self.call_button_list:
-            if call_button.floor == floor and call_button.direction == "UP":
+            if call_button.floor == floor and call_button.direction == "DOWN":
                 call_button.deactivated() #For production remove ', direction' - not necessary for operation - just demonstation via console
 
     def findUp(self, floor):
