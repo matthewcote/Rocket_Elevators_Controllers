@@ -41,42 +41,30 @@ class Floor_Door(Door):
         self.status = "CLOSED"
         print("Elevator Floor", self.floor, " Door - ", self.status)
 
-class Call_Button:
+class Button: # Request Button
+    def __init__(self, floor):
+        self.floor = floor
+        self.status = "IDLE"
+    def activate(self):
+        self.status = "ACTIVE"
+        print("Button with floor ", self.floor, "has ", self.status, " status.") #remove for production
+    def deactivate(self):
+        self.status = "IDLE"
+        print("Button with floor ", self.floor, "has ", self.status, " status.") #remove for production
+
+class Call_Button(Button): # Call Button
     def __init__(self, floor, direction): 
-        self.floor = floor 
+        Button.__init__(self, floor)
         self.direction = direction
-        self.status = "IDLE" 
-    def call_button_push(self, elevator_list): 
-        self.status = "ACTIVE" 
-        elevator_choice = "NULL"
-        diff = 0
-        best_diff = 9999
-        for elevator in elevator_list:
-            if elevator.current_floor > self.floor and elevator.status == "DOWN":
-                diff = elevator.current_floor - self.floor
-                if diff < best_diff:
-                    elevator_choice = elevator
-                    best_diff = diff
-
-        if elevator_choice != "NULL":
-            elevator.push_floor_list(self.floor)
-            return
-
-        for elevator in elevator_list: 
-            if elevator.status == "IDLE": 
-                if elevator.current_floor > self.floor: 
-                    diff = elevator.current_floor - self.floor 
-                    if diff < best_diff:
-                        elevator_choice = elevator 
-                        best_diff = diff
-                diff = self.floor - elevator.current_floor 
-                if diff < best_diff: 
-                    elevator_choice = elevator
-                    best_diff = diff
-
-        if elevator_choice != "NULL":
-            elevator.push_floor_list(self.floor)
-            return 
+    ## Only necessary for simulation purposes - to show you the proper light is turning on and off - not necessary
+    # DELETE ALL BELOW FOR PRODUCTION - class will still inherit necessary behavior for operation
+    def activated(self):
+        self.status = "ACTIVE"
+        print("Button with floor ", self.floor, "and ", self.direction, " direction has ", self.status, " status") #remove for production
+    def deactivated(self):
+        self.status = "IDLE"
+        print("Button with floor ", self.floor, "and ", self.direction, " direction has ", self.status, " status") #remove for production
+    # STOP DELETE ALL FOR PRODUCTION
 
 class Elevator_: 
 
@@ -85,6 +73,7 @@ class Elevator_:
         self.status = "IDLE" 
         self.current_floor = 1 
         self.door_list = [] 
+        self.button_list = []
         self.floor_list = [] 
         self.door = Door()
         self.floor_display = Floor_Display(self.current_floor, self.status) 
@@ -92,11 +81,14 @@ class Elevator_:
         while floor <= top_floor: 
             door = Floor_Door(floor) 
             self.door_list.append(door) 
+            button = Button(floor)
+            self.button_list.append(button)
             floor += 1 
 
     def push_floor_list(self, floor): 
         self.floor_list.append(floor) 
         self.status = "ACTIVE"
+        self.button_list[floor-1].activate()
         self.move() 
 
     def move(self): 
@@ -122,6 +114,7 @@ class Elevator_:
     def stop(self): 
         self.open_doors(self.current_floor) 
         print('Elevator ', self.num, ': stopped at :', self.current_floor)
+        self.button_list[self.current_floor-1].deactivate()
         self.wait()
 
         self.close_doors(self.current_floor) 
@@ -154,7 +147,7 @@ class Column:
         self.call_button_list = [] 
         self.bottom_floor = bottom_floor 
         self.top_floor = top_floor 
-        self. elevator_num = elevator_num 
+        self.elevator_num = elevator_num 
         self.fill_elevator_list() 
         self.fill_call_button_list() 
 
@@ -166,11 +159,11 @@ class Column:
             num += 1 
 
     def fill_call_button_list(self): 
-        floor = self.bottom_floor + 1
+        floor = self.bottom_floor+1
         while floor < self.top_floor: 
             call_button = Call_Button(floor, "UP") 
             self.call_button_list.append(call_button)
-            call_button = Call_Button(floor, "Down") 
+            call_button = Call_Button(floor, "DOWN") 
             self.call_button_list.append(call_button)
             floor += 1
         self.call_button_list.append(Call_Button(self.top_floor, "DOWN")) 
@@ -200,6 +193,11 @@ class Column:
             return 
 
     def findDown(self, floor):
+        for call_button in self.call_button_list:
+            if call_button.floor == floor and call_button.direction == "DOWN":
+                print("this happens")
+                call_button.activated() #For production remove ', direction' - not necessary for operation - just demonstation via console
+
         elevator_choice = "NULL" 
         diff = 0 
         best_diff = 9999 
@@ -210,13 +208,20 @@ class Column:
                     elevator_choice = elevator 
                     best_diff = diff
         if elevator_choice != "NULL": 
+            
             print('Column ', self.num, 'chose elevator ', elevator_choice.num)
             elevator_choice.push_floor_list(floor) 
             return
         else:
             self.findIdle(floor)
+        for call_button in self.call_button_list:
+            if call_button.floor == floor and call_button.direction == "UP":
+                call_button.deactivated() #For production remove ', direction' - not necessary for operation - just demonstation via console
 
     def findUp(self, floor):
+        for call_button in self.call_button_list:
+            if call_button.floor == floor and call_button.direction == "UP":
+                call_button.activated() #For production remove ', direction' - not necessary for operation - just demonstation via console
         elevator_choice = "NULL" 
         diff = 0 
         best_diff = 9999 
@@ -232,8 +237,11 @@ class Column:
             return
         else:
             self.findIdle(floor)
+        for call_button in self.call_button_list:
+            if call_button.floor == floor and call_button.direction == "UP":
+                call_button.deactivated() #For production remove ', direction' - not necessary for operation - just demonstation via console
 
-    def RequestElevator(self, RequestedFloor, Direction):
+    def RequestElevator(self, RequestedFloor, Direction): #Call_Button pushed
 
         if Direction == "UP":
             self.findUp(RequestedFloor)
@@ -256,9 +264,9 @@ class Column:
         else:
             self.findIdle(RequestedFloor)
 
-    def RequestFloor(self, Elevator, RequestedFloor):
+    def RequestFloor(self, Elevator, RequestedFloor): #Request_Button pushed
             self.elevator_list[Elevator].push_floor_list(RequestedFloor)
-
+    
     def choose_elevator(self, floor):
         elevator_choice = "NULL" 
         diff = 0 
@@ -382,12 +390,16 @@ if __name__ == '__main__':
     print(" ")
     print("Elevator A is Idle at floor 2")
     column.RequestFloor(0, 2)
+    print(" ")
     print("Elevator B is Idle at floor 6")
     column.RequestFloor(1, 6)
+    print(" ")
     print("Someone is on floor 3 ")
     column.RequestElevator(3, "UP")
+    print(" ")
     print("and wants to go to the 7th floor.")
     column.RequestFloor(0, 7)
+    print(" ")
     print("Test Scenario 1 - Complete")
     print(" ")
 
@@ -396,12 +408,16 @@ if __name__ == '__main__':
     print(" ")
     print("Elevator A is Idle at floor 10")
     column.RequestFloor(0, 10)
+    print(" ")
     print("Elevator B is Idle at floor 3")
     column.RequestFloor(1, 3)
+    print(" ")
     print("Someone is on floor 3 ")
     column.RequestElevator(1, "UP")
+    print(" ")
     print("and wants to go to the 6th floor.")
     column.RequestFloor(1, 6)
+    print(" ")
     print(" ")
     print("2 minutes later, someone else is on the 3rd floor and requests the 5th floor.")
     column.RequestElevator(3, "UP")
