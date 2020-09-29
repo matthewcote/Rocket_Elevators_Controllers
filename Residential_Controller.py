@@ -13,28 +13,33 @@ class Floor_Display:
         self.display_status = status 
         print('Floor display shows ', self.display_number, 'with ', self.display_status, ' status')
 
-class Elevator_Door: 
+class Door: 
     def __init__(self): 
         self.status = "CLOSED" 
 
     def open_door(self):
         self.status = "OPEN"
+        print("Elevator Door - ", self.status)
 
     def close_door(self):
-        self.status = "CLOSE"
+        self.status = "CLOSED"
+        print("Elevator Door - ", self.status)
 
     def alert(self):
         self.open_door()
 
-class Door:
+class Floor_Door(Door):
     def __init__(self, floor): 
+        Door.__init__(self)
         self.floor = floor 
-        self.status = "IDLE" 
-    def open_door(self): 
-        self.door_status = "OPEN" 
+
+    def open_door(self):
+        self.status = "OPEN"
+        print("Elevator Floor", self.floor, " Door - ", self.status)
 
     def close_door(self):
-        self.door_status = "CLOSE" 
+        self.status = "CLOSED"
+        print("Elevator Floor", self.floor, " Door - ", self.status)
 
 class Call_Button:
     def __init__(self, floor, direction): 
@@ -81,11 +86,11 @@ class Elevator_:
         self.current_floor = 1 
         self.door_list = [] 
         self.floor_list = [] 
-        self.elevator_door = Elevator_Door() 
+        self.door = Door()
         self.floor_display = Floor_Display(self.current_floor, self.status) 
         floor = bottom_floor 
         while floor <= top_floor: 
-            door = Door(floor) 
+            door = Floor_Door(floor) 
             self.door_list.append(door) 
             floor += 1 
 
@@ -131,16 +136,16 @@ class Elevator_:
         self.status = "IDLE" #'TODO - can add a wait variable to be set when initializing column or change to like 3 seconds'
 
     def close_doors(self, floor): 
-        self.elevator_door.close_door()
+        self.door.close_door()
         for door in self.door_list:
             if door.floor == floor:
                 door.close_door() 
 
     def open_doors(self, floor): 
-        self.elevator_door.open_door() 
+        self.door.open_door() 
         for door in self.door_list: 
             if door.floor == floor:
-                door.open_door 
+                door.open_door()
 
 class Column:
     def __init__(self, num, bottom_floor, top_floor, elevator_num): 
