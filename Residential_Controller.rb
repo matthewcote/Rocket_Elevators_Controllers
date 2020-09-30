@@ -6,9 +6,16 @@ class Floor_Display #Define floor_display
         @display_direction = display_number
     end
     
-    def set_display(floor, direction) #SEQUENCE set_display USING floor and direction
+    def set_display(num, floor, direction) #SEQUENCE set_display USING floor and direction
         @display_number = floor
         @display_direction = direction
+        if num == 0
+            character = 'A'
+        end
+        if num == 1
+            character = 'B'
+        end 
+        print("El: ", character, " Flr: ", floor, " Dir: ", direction, "-> ")
     end
 
 end
@@ -100,7 +107,7 @@ class Request_Button
 end
 
 class Elevator_
-    attr_reader :num, :bottom_floor, :top_floor, :status, :current_floor, :floor_list
+    attr_reader :num, :bottom_floor, :top_floor, :status, :current_floor, :floor_list, :floor_display
     def initialize(num, bottom_floor, top_floor)
         @num = num
         @status = "IDLE" 
@@ -123,7 +130,7 @@ class Elevator_
         @floor_list.push(floor) 
         @status = "ACTIVE"
         @button_list[floor-1].activate()
-        move() 
+        move()
     end
     def move()
         for floor in @floor_list
@@ -132,32 +139,36 @@ class Elevator_
                 stop()
             end
             if floor < @current_floor then
-                @status = "DOWN" 
-                print("Elevator ", @num , ": Floor = ", @current_floor, " ")
-                @floor_display.set_display(@current_floor, @status) 
+                @status = "DOWN"
+                @floor_display.set_display(@num, @current_floor, @status)
                 @current_floor -= 1 
                 move
             end
             if floor > @current_floor then
                 @status = "UP"
-                print("Elevator ", @num ,": Floor = ", @current_floor, " ")
-                @floor_display.set_display(@current_floor, @status)
+                @floor_display.set_display(@num, @current_floor, @status)
                 @current_floor += 1
                 move
             end
         end
     end
     def stop()
+        if @num == 0
+            character = 'A'
+        end
+        if @num == 1
+            character = 'B'
+        end
         open_doors(@current_floor) 
-        print('Elevator ', @num, ': stopped at :', @current_floor, " ")
+        print('ELEVATOR: ', character, ' ARRIVED AT: ', @current_floor, "\n")
         @button_list[@current_floor-1].deactivate()
         wait()
 
         close_doors(@current_floor) 
             
-        if not @floor_list then
+        if @floor_list.empty? then
             @status = "IDLE" 
-            @floor_display.set_display(@current_floor, @status)
+            @floor_display.set_display(@num, @current_floor, @status)
         else
             move()
         end
@@ -166,21 +177,45 @@ class Elevator_
         @status = "IDLE" #'TODO - can add a wait variable to be set when initializing column or change to like 3 seconds'
     end
     def close_doors(floor)
+        if @num == 0
+            character = 'A'
+        end
+        if @num == 1
+            character = 'B'
+        end
+        
+        
+        
         @door.close_door()
+        print "Elevator ", character, " - Closing Door-->\n"
         for door in @door_list do
             if door.floor == floor
-                @door.close_door() 
+                @door.close_door()
+                print "Elevator ", character, " - Closing Floor Door - ", @current_floor, "-->\n"
             end
         end
     end
 
     def open_doors(floor)
+        if @num == 0
+            character = 'A'
+        end
+        if @num == 1
+            character = 'B'
+        end
         @door.open_door() 
+        print "Elevator ", character, " - Opening Door-->\n"
         for door in @door_list do
             if door.floor == floor
                 @door.open_door()
+                print "Elevator ", character, " - Opening Floor Door - ", @current_floor, "-->\n"
             end
         end
+    end
+
+    def set_status(status)
+        @status = status
+        @floor_display.set_display(@num, @current_floor, @status)
     end
 end
 
@@ -259,8 +294,15 @@ class Column
         end
 
         if elevator_choice != "NULL" then
-            print('Column ', @num, 'chose elevator ', elevator_choice.num, ' ')
+            if elevator_choice.num == 0
+                character = 'A'
+            end
+            if elevator_choice.num == 1
+                character = 'B'
+            end
+            print 'COLUMN CHOSE ELEVATOR ', character, "-->\n"
             elevator_choice.push_floor_list(floor)
+            
             return 
         end
 
@@ -295,7 +337,16 @@ class Column
         end
 
         if elevator_choice != "NULL" then
-            print('Column ', @num, 'chose elevator ', elevator_choice.num, ' ')
+            if elevator_choice.num == 0
+                character = 'A'
+            end
+            if elevator_choice.num == 1
+                character = 'B'
+            end
+            printf('COLUMN CHOSE ELEVATOR ', character, "-->\n")
+            elevator_choice.push_floor_list(floor)
+            
+            return 
             elevator_choice.push_floor_list(floor) 
             return
         else
@@ -341,7 +392,16 @@ class Column
         end
         
         if elevator_choice != "NULL" then
-            print('Column ', @num, 'chose elevator ', elevator_choice.num, " ")
+            if elevator_choice.num == 0
+                character = 'A'
+            end
+            if elevator_choice.num == 1
+                character = 'B'
+            end
+            printf('COLUMN CHOSE ELEVATOR ', character, "-->\n")
+            elevator_choice.push_floor_list(floor)
+            
+            return 
             elevator_choice.push_floor_list(floor) 
             return
         
@@ -387,7 +447,16 @@ class Column
         end
 
         if elevator_choice != "NULL" then
-            print('Column ', @num, 'chose elevator ', elevator_choice.num)
+            if elevator_choice.num == 0
+                character = 'A'
+            end
+            if elevator_choice.num == 1
+                character = 'B'
+            end
+            printf('COLUMN CHOSE ELEVATOR ', character, "-->\n")
+            elevator_choice.push_floor_list(floor)
+            
+            return 
             elevator_choice.push_floor_list(requestedFloor) 
             return
         else
@@ -396,8 +465,16 @@ class Column
 
     end
 
-    def requestFloor(elevator, requestedFloor) #Request_Button pushed
+    def requestFloor(elevator, requestedFloor) #Request_Button pushed   
+        if elevator == 0
+            character = 'A'
+        end
+        if elevator == 1
+            character = 'B'
+        end     
+        print "PUSHED ELEVATOR ", character, "  Requested Floor - ", requestedFloor, "-->\n"
         @elevator_list[elevator].push_floor_list(requestedFloor)
+
     end
     
 end
@@ -408,61 +485,53 @@ print "column created\n"
 print " \n"
 print "scenario 1\n"
 print " \n"
-print "Elevator A is Idle at floor 2\n"
 column.requestFloor(0, 2)
 print " \n"
-print "Elevator B is Idle at floor 6\n"
 column.requestFloor(1, 6)
 print " \n"
-print "Someone is on floor 3 \n"
 column.requestElevator(3, "UP")
 print " \n"
-print "and wants to go to the 7th floor.\n"
 column.requestFloor(0, 7)
 print " \n"
 print "Test Scenario 1 - Complete\n"
 print " \n"
 
-print "scenario 2 - press enter to execute\n"
+print "scenario 2 -\n"
 print " \n"
-print "Elevator A is Idle at floor 10\n"
+
 column.requestFloor(0, 10)
 print " "
-print "Elevator B is Idle at floor 3\n"
+
 column.requestFloor(1, 3)
 print " \n"
-print "Someone is on floor 3 \n"
 column.requestElevator(1, "UP")
 print " \n"
-print("and wants to go to the 6th floor.\n")
 column.requestFloor(1, 6)
 print " \n"
-print " \n"
-print "2 minutes later, someone else is on the 3rd floor and requests the 5th floor.\n"
 column.requestElevator(3, "UP")
+print " \n"
 column.requestFloor(1, 5)
 print " \n"
-print "Finally, a third person is at floor 9 and wants to go down to the 2nd floor.\n"
 column.requestElevator(9, "DOWN")
+print " \n"
 column.requestFloor(0, 2)
 print "Test Scenario 2 - Complete\n"
 print "\n"
-print "scenario 3- press enter to execute\n"
+print "scenario 3 - \n"
 print "\n"
-print "Elevator A is Idle at floor 10\n"
 column.requestFloor(0, 10)
-print "Elevator B is moving from floor 3 to floor 6\n"
+print " \n"
 column.requestFloor(1, 3)
-#column.elevator_list[1]this.status = "UP" #is this acceptable solution ruby t scenario 3?
-print "Someone is on floor 3\n"
+column.elevator_list[1].set_status("UP") #is this acceptable solution ruby t scenario 3?
+print " \n"
 column.requestElevator(3, "DOWN")
-print "and requests the second.\n"
+print " \n"
 column.requestFloor(0, 2)
+print " \n"
 column.requestFloor(1, 6)
-print " "
-print "5 minutes later, someone else is on the 10th floor \n"
+print " \n"
 column.requestElevator(10, "DOWN")
-print "and wants to go to the 3rd.\n"
+print " \n"
 column.requestFloor(1, 3)
 print " \n"
 print "Simulation Completed \n"
