@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\mattc\\Desktop\\CommercialController\\CommercialController.csproj": {}
+    "C:\\Users\\mattc\\Desktop\\CodeBoxx\\Rocket_Elevators_Controllers\\C-Sharp Commercial Controller\\CommercialController\\CommercialController.csproj": {}
   },
   "projects": {
-    "C:\\Users\\mattc\\Desktop\\CommercialController\\CommercialController.csproj": {
+    "C:\\Users\\mattc\\Desktop\\CodeBoxx\\Rocket_Elevators_Controllers\\C-Sharp Commercial Controller\\CommercialController\\CommercialController.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\mattc\\Desktop\\CommercialController\\CommercialController.csproj",
+        "projectUniqueName": "C:\\Users\\mattc\\Desktop\\CodeBoxx\\Rocket_Elevators_Controllers\\C-Sharp Commercial Controller\\CommercialController\\CommercialController.csproj",
         "projectName": "CommercialController",
-        "projectPath": "C:\\Users\\mattc\\Desktop\\CommercialController\\CommercialController.csproj",
+        "projectPath": "C:\\Users\\mattc\\Desktop\\CodeBoxx\\Rocket_Elevators_Controllers\\C-Sharp Commercial Controller\\CommercialController\\CommercialController.csproj",
         "packagesPath": "C:\\Users\\mattc\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\mattc\\Desktop\\CommercialController\\obj\\",
+        "outputPath": "C:\\Users\\mattc\\Desktop\\CodeBoxx\\Rocket_Elevators_Controllers\\C-Sharp Commercial Controller\\CommercialController\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "C:\\Users\\mattc\\AppData\\Roaming\\NuGet\\NuGet.Config",

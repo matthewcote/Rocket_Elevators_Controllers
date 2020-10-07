@@ -8,24 +8,18 @@ namespace CommercialController
     {
         int floor;
         bool status;
-
         public Button(int setfloor)
         {
             floor = setfloor;
             status = false;
         }
-        
         public void SetStatus(bool setstatus)
         {
             status = setstatus;
-        }
-        // so about 15 mins ago, I deleted a complete modern commercial solution C#, by accident, on VS Studio Code, ironically I was trying to save my work on github, 
-        // but I wasn't thinking and I cloned an empty repository onto my project, instead of the other way around - zero backup, permanent delete as far as i can tell
-        // which is great news for me because tomorrow i can write it all again, right here, but first I will put this where it belongs, and back it up
-        
+        }        
     }
 
-    class CallButton : Button
+    class CallButton : Button // for classic columns
     {
         bool direction;
 
@@ -36,7 +30,7 @@ namespace CommercialController
         }
     }
 
-    class Door
+    class Door // each elevator has a simple door
     {
         bool status;
 
@@ -51,7 +45,7 @@ namespace CommercialController
         }
     }
 
-    class FloorDoor : Door
+    class FloorDoor : Door // each elevator has a floor door for every floor it can stop at
     {
         int floor;
 
@@ -63,7 +57,7 @@ namespace CommercialController
 
     }
 
-    class FloorDisplay
+    class FloorDisplay // a floor display holds and displays the elevator's current floor and status 
     {
         public Status status;
         public int floor;
@@ -81,16 +75,17 @@ namespace CommercialController
         }
     }
 
-    class Elevator
+    class Elevator // a modern elevator
     {
-        string name;
-        FloorDisplay fd;
-        Door door;
-        List<FloorDoor> floordoors = new List<FloorDoor>();
-        List<int> floors = new List<int>();
+        public string name;
+        public FloorDisplay fd;
+        public Door door;
+        public List<FloorDoor> floordoors = new List<FloorDoor>();
+        public List<int> floors = new List<int>();
 
-        public Elevator(string setname, int bottomfloor, int topfloor, int origin) // A modern elevator
+        public Elevator(string setname, int bottomfloor, int topfloor, int origin) // base constructor for any elevator
         {
+
             name = setname;
             fd = new FloorDisplay(origin);
             door = new Door(false);
@@ -160,30 +155,255 @@ namespace CommercialController
 
         public void Display()
         {
+            Console.ForegroundColor = ConsoleColor.Green;
+            Console.WriteLine("CodeBoxx!");
+            Console.ForegroundColor = ConsoleColor.Green;
+            Console.Write("Elevator: ");
+            Console.ForegroundColor = ConsoleColor.Yellow;
+            Console.Write(name);
+            Console.ForegroundColor = ConsoleColor.Green;
+            Console.Write(" Floor: ");
+            Console.ForegroundColor = ConsoleColor.Yellow;
+            Console.Write(fd.floor);
+            Console.ForegroundColor = ConsoleColor.Green;
+            Console.Write(" Status: ");
+            Console.ForegroundColor = ConsoleColor.Yellow;
+            Console.Write(fd.status);
+            Console.ResetColor();
+            Console.Write("\n");
 
         }
     }
 
     class ClassicElevator : Elevator // a classic elevator
     {
-        List<Button> buttons = new List<Button>();
-        public ClassicElevator(string name, int bottomfloor, int topfloor, int origin)
-            : base(name, bottomfloor, topfloor, origin)
+        List<Button> buttons = new List<Button>(); // a modern elevator with buttons
+        public ClassicElevator(string name, int bottomfloor, int topfloor, int origin) // same constructor
+            : base(name, bottomfloor, topfloor, origin) 
         {
-            for (int i = bottomfloor; i < topfloor; i++ ) {
+            for (int i = bottomfloor; i < topfloor; i++ ) { // but with buttons
                 Button b = new Button(i);
                 buttons.Add(b);
             }
-            if (bottomfloor != origin) {
+            if (bottomfloor != origin) { 
                 Button b = new Button(origin);
                 buttons.Add(b);
             }
         }
     }
 
-    class Column 
+    class Column // 
     {
+        string name;
+        int origin;
+        int bottomfloor;
+        int topfloor;
+        int elevAmt;
 
+        public List<object> btns = new List<object>(); // don't know yet whether they will hold buttons or call buttons! Iamnerd!
+        public List<Elevator> els = new List<Elevator>(); // don't know yet whether they will hold Elevators or modern elevators! 
+
+        public Column(string setname, int setorigin, int setbottomfloor, int settopfloor, int setelevAmt) { // this I just decided will hold a classic column
+            name = setname;
+            origin = setorigin;
+            bottomfloor = setbottomfloor;
+            topfloor = settopfloor;
+            elevAmt = setelevAmt;
+
+            // add classic elevators to my classic column
+            for (int i = 0; i < elevAmt; i++ ) { // but with buttons
+                ClassicElevator e = new ClassicElevator(name+i.ToString(), bottomfloor, topfloor, origin); // make up button
+                els.Add(e); // add to list 
+            }
+            // add call buttons to my classic column
+            for (int i = bottomfloor; i < topfloor; i++ ) { // but with buttons
+                CallButton bup = new CallButton(i, true); // make up button
+                btns.Add(bup); // add to list 
+                CallButton bd = new CallButton(i, false); // down
+                btns.Add(bd); // list
+            }
+            if (bottomfloor != origin) { 
+                CallButton bup = new CallButton(origin, true); // make up button
+                btns.Add(bup); // add to list 
+                CallButton bd = new CallButton(origin, false); // down
+                btns.Add(bd); // list
+            }
+        }
+
+        public Column(int setorigin, int setbottomfloor, int settopfloor, int setelevAmt, string setname) // this is a modern column, notice the difference
+        {
+            // add classic elevators to my classic column
+            for (int i = 0; i < elevAmt; i++ ) { // but with buttons
+                Elevator e = new Elevator(name+i.ToString(), bottomfloor, topfloor, origin); // make up button
+                els.Add(e); // add to list 
+            }
+            for (int i = bottomfloor; i < topfloor; i++ ) { // but with buttons
+                Button b = new Button(i); // make up button
+                btns.Add(b); // add to list 
+            }
+            if (bottomfloor != origin) { 
+                Button b = new Button(origin); // make up button
+                btns.Add(origin); // add to list 
+            }
+        } // ints before string is sooooooo modern
+
+        public void RequestElevator(int target) // Person is at the target, they want to be picked up and brought to origin, modern approach, modern callbuttons, no elevator buttons
+        {
+            int elchoice = -1;
+            int diff = 0;
+            int bestdiff = 999;
+
+            if (target > origin) { // if target > origin - first priority is elevator above target moving down
+                for (int i = 0; i < elevAmt; i++) // iterate
+                {
+                    if (els[i].fd.floor == target && els[i].fd.status != Status.Up) { // already found the perfect elevator
+                        els[i].PushFloor(origin); // now lets stop, and go to origin
+                        return;
+                    }
+                    if (els[i].fd.floor > target && els[i].fd.status == Status.Down) { // first priority
+                        diff = els[i].fd.floor - target;
+                        if (diff < bestdiff)
+                        {
+                            elchoice = i;
+                            bestdiff = diff;
+                        }
+                    } 
+                } // end iterate
+                if (elchoice != -1)
+                {
+                    els[elchoice].PushFloor(target);
+                    els[elchoice].PushFloor(origin);
+                }
+                else // no first priority elevator, find closest Idle elevator
+                {
+                    for (int i = 0; i < elevAmt; i++) // iterate
+                    {
+                        if (els[i].fd.floor > target && els[i].fd.status == Status.Idle) {
+                            diff = els[i].fd.floor - target;
+                            if (diff < bestdiff)
+                            {
+                                elchoice = i;
+                                bestdiff = diff;
+                            }
+                        } 
+                        if (els[i].fd.floor < target && els[i].fd.status == Status.Idle) {
+                            diff =  target - els[i].fd.floor;
+                            if (diff < bestdiff)
+                            {
+                                elchoice = i;
+                                bestdiff = diff;
+                            }
+                        } 
+                    } // end iterate
+                    els[elchoice].PushFloor(target);
+                    els[elchoice].PushFloor(origin);
+                }
+            }
+
+            if (target < origin) // first priority is elevator above target moving down
+            {
+            for (int i = 0; i < elevAmt; i++) // iterate
+            {
+                if (els[i].fd.floor == target && els[i].fd.status != Status.Down) { // already found the perfect elevator
+                    els[i].PushFloor(origin); // now lets stop, and go to origin
+                    return;
+                }
+                if (els[i].fd.floor < target && els[i].fd.status == Status.Up) { // first priority
+                    diff = target - els[i].fd.floor;
+                    if (diff < bestdiff)
+                    {
+                        elchoice = i;
+                        bestdiff = diff;
+                    }
+                } 
+            } // end iterate
+            if (elchoice != -1)
+            {
+                els[elchoice].PushFloor(target);
+                els[elchoice].PushFloor(origin);
+            }
+            else // no first priority elevator, find closest Idle elevator
+            {
+                for (int i = 0; i < elevAmt; i++) // iterate
+                {
+                    if (els[i].fd.floor > target && els[i].fd.status == Status.Idle) {
+                        diff = els[i].fd.floor - target;
+                        if (diff < bestdiff)
+                        {
+                            elchoice = i;
+                            bestdiff = diff;
+                        }
+                    } 
+                    if (els[i].fd.floor < target && els[i].fd.status == Status.Idle) {
+                        diff =  target - els[i].fd.floor;
+                        if (diff < bestdiff)
+                        {
+                            elchoice = i;
+                            bestdiff = diff;
+                        }
+                    } 
+                } // end iterate
+                els[elchoice].PushFloor(target);
+                els[elchoice].PushFloor(origin);                    
+                }
+
+            } // end first priority
+        } // End Request Elevator
+
+        public void AssignElevator(int target) // Person is at the origin, they want to be picked up and brought to target, modern approach, modern callbuttons, no elevator buttons
+        {
+            int elchoice = -1;
+            int diff = 0;
+            int bestdiff = 999;
+
+            if (target > origin) { // if target > origin - first priority is elevator above target moving down
+                for (int i = 0; i < elevAmt; i++) // iterate
+                {
+                    if (els[i].fd.floor == origin) { // already found the perfect elevator
+                        els[i].PushFloor(target); // now lets stop, and go to origin
+                        return;
+                    }
+                    if (els[i].fd.floor > origin && els[i].fd.status == Status.Down) { // first priority
+                        diff = els[i].fd.floor - origin;
+                        if (diff < bestdiff)
+                        {
+                            elchoice = i;
+                            bestdiff = diff;
+                        }
+                    } 
+                } // end iterate
+                if (elchoice != -1) // a elevator was found moving towards origin, this is the closest one - this one gets the job
+                {
+                    els[elchoice].PushFloor(origin);
+                    els[elchoice].PushFloor(target);
+                }
+                else // no first priority elevator, find closest Idle elevator
+                {
+                    for (int i = 0; i < elevAmt; i++) // iterate
+                    {
+                        if (els[i].fd.floor > origin && els[i].fd.status == Status.Idle) {
+                            diff = els[i].fd.floor - origin;
+                            if (diff < bestdiff)
+                            {
+                                elchoice = i;
+                                bestdiff = diff;
+                            }
+                        } 
+                        if (els[i].fd.floor < origin && els[i].fd.status == Status.Idle) {
+                            diff =  origin - els[i].fd.floor;
+                            if (diff < bestdiff)
+                            {
+                                elchoice = i;
+                                bestdiff = diff;
+                            }
+                        } 
+                    } // end iterate
+                    els[elchoice].PushFloor(origin);
+                    els[elchoice].PushFloor(target);
+                }
+            }
+        }
+    
     }
 
     class Battery
@@ -191,11 +411,31 @@ namespace CommercialController
 
     }
 
+    
+
     class Program
     {
+
+
+
         static void Main(string[] args)
         {
-            Console.WriteLine("Hello World!");
+            string datePatt = @"M/d/yyyy hh:mm:ss tt";
+            void DisplayNow(string title, DateTime inputDt)
+            {
+                string dtString = inputDt.ToString(datePatt);
+                Console.WriteLine("{0} {1}, Kind = {2}",
+                title, dtString);
+            }
+            DateTime saveNow = DateTime.Now;
+            DateTime myDt;
+            myDt = DateTime.SpecifyKind(saveNow, DateTimeKind.Local);
+            Console.ForegroundColor = ConsoleColor.Red;
+            DisplayNow("Simulation started at .............", saveNow);
+
+            Elevator e = new Elevator("CodeBoxx!", 1, 20, 1);
+            e.Display();
+            Console.ResetColor();
         }
     }
 }

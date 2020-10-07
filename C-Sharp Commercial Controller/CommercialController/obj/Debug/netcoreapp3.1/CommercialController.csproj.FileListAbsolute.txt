@@ -1,0 +1,13 @@
+C:\Users\mattc\Desktop\CodeBoxx\Rocket_Elevators_Controllers\C-Sharp Commercial Controller\CommercialController\bin\Debug\netcoreapp3.1\CommercialController.exe
+C:\Users\mattc\Desktop\CodeBoxx\Rocket_Elevators_Controllers\C-Sharp Commercial Controller\CommercialController\bin\Debug\netcoreapp3.1\CommercialController.deps.json
+C:\Users\mattc\Desktop\CodeBoxx\Rocket_Elevators_Controllers\C-Sharp Commercial Controller\CommercialController\bin\Debug\netcoreapp3.1\CommercialController.runtimeconfig.json
+C:\Users\mattc\Desktop\CodeBoxx\Rocket_Elevators_Controllers\C-Sharp Commercial Controller\CommercialController\bin\Debug\netcoreapp3.1\CommercialController.runtimeconfig.dev.json
+C:\Users\mattc\Desktop\CodeBoxx\Rocket_Elevators_Controllers\C-Sharp Commercial Controller\CommercialController\bin\Debug\netcoreapp3.1\CommercialController.dll
+C:\Users\mattc\Desktop\CodeBoxx\Rocket_Elevators_Controllers\C-Sharp Commercial Controller\CommercialController\bin\Debug\netcoreapp3.1\CommercialController.pdb
+C:\Users\mattc\Desktop\CodeBoxx\Rocket_Elevators_Controllers\C-Sharp Commercial Controller\CommercialController\obj\Debug\netcoreapp3.1\CommercialController.csprojAssemblyReference.cache
+C:\Users\mattc\Desktop\CodeBoxx\Rocket_Elevators_Controllers\C-Sharp Commercial Controller\CommercialController\obj\Debug\netcoreapp3.1\CommercialController.AssemblyInfoInputs.cache
+C:\Users\mattc\Desktop\CodeBoxx\Rocket_Elevators_Controllers\C-Sharp Commercial Controller\CommercialController\obj\Debug\netcoreapp3.1\CommercialController.AssemblyInfo.cs
+C:\Users\mattc\Desktop\CodeBoxx\Rocket_Elevators_Controllers\C-Sharp Commercial Controller\CommercialController\obj\Debug\netcoreapp3.1\CommercialController.csproj.CoreCompileInputs.cache
+C:\Users\mattc\Desktop\CodeBoxx\Rocket_Elevators_Controllers\C-Sharp Commercial Controller\CommercialController\obj\Debug\netcoreapp3.1\CommercialController.dll
+C:\Users\mattc\Desktop\CodeBoxx\Rocket_Elevators_Controllers\C-Sharp Commercial Controller\CommercialController\obj\Debug\netcoreapp3.1\CommercialController.pdb
+C:\Users\mattc\Desktop\CodeBoxx\Rocket_Elevators_Controllers\C-Sharp Commercial Controller\CommercialController\obj\Debug\netcoreapp3.1\CommercialController.genruntimeconfig.cache
