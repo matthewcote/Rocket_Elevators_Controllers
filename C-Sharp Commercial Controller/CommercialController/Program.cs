@@ -65,8 +65,8 @@ namespace CommercialController
 
     class FloorDisplay
     {
-        Status status;
-        int floor;
+        public Status status;
+        public int floor;
 
         public FloorDisplay(int setfloor)
         {
@@ -87,33 +87,97 @@ namespace CommercialController
         FloorDisplay fd;
         Door door;
         List<FloorDoor> floordoors = new List<FloorDoor>();
-
         List<int> floors = new List<int>();
 
-        public Elevator(string setname, int setbottomfloor, int settopfloor, int setorigin) 
+        public Elevator(string setname, int bottomfloor, int topfloor, int origin) // A modern elevator
         {
             name = setname;
-            fd = new FloorDisplay(setorigin);
+            fd = new FloorDisplay(origin);
             door = new Door(false);
-            
+            // Every elevator will need floordoors for bottomfloor through top floor 
+            for (int i = bottomfloor; i < topfloor; i++ ) {
+                FloorDoor f = new FloorDoor(false, i);
+                floordoors.Add(f);
+            }
+            if (bottomfloor != origin) { // if bottomfloor != origin -> add one for origin too.
+                FloorDoor f = new FloorDoor(false, origin);
+                floordoors.Add(f);
+            }
+            // Elevator has a name, floordisplay, a door, floordoors - this is a modern elevator, a classic elevator just adds a list of buttons
         }
-    }
 
-    class ModernElevator : Elevator
-    {
-        public ModernElevator(string setname, int setbottomfloor, int settopfloor, int setorigin)
-            : base(setname, setbottomfloor, settopfloor, setorigin)
+        public void PushFloor(int target) {
+            floors.Add(target);
+
+            if (fd.floor == target) 
+            { // already arrived at target!
+                Stop();
+            }
+            if (fd.floor > target) 
+            { // Going Down
+                fd.status = Status.Down;
+                Display();
+                Stop();
+            }
+
+            if (fd.floor < target) 
+            { // Going Up
+                fd.status = Status.Up;
+                Display();
+                Stop();
+            }
+        }
+
+        public void Move() 
+        {
+            if (floors.Contains(fd.floor)) {
+                Stop();
+            }
+            if (fd.status == Status.Up) {
+                fd.floor += 1;
+                Display();
+                Move();
+            }
+            if (fd.status == Status.Down) {
+                fd.floor -= 1;
+                Display();
+                Move();
+            }
+        }
+
+        public void Stop()
+        {
+            floors.Remove(fd.floor);
+            if (floors.Count == 0) {
+                fd.status = Status.Idle;
+                Display();               
+            }
+            else
+            {
+                Move();
+            }
+        }
+
+        public void Display()
         {
 
         }
     }
 
-    class ClassicElevator : Elevator 
+    class ClassicElevator : Elevator // a classic elevator
     {
-        public ClassicElevator(string setname, int setbottomfloor, int settopfloor, int setorigin)
-            : base(setname, setbottomfloor, settopfloor, setorigin)
+        List<Button> buttons = new List<Button>();
+        public ClassicElevator(string name, int bottomfloor, int topfloor, int origin)
+            : base(name, bottomfloor, topfloor, origin)
         {
-
+            for (int i = bottomfloor; i < topfloor; i++ ) {
+                Button b = new Button(i);
+                buttons.Add(b);
+            }
+            if (bottomfloor != origin) {
+                Button b = new Button(origin);
+                buttons.Add(b);
+            }
         }
     }
 
