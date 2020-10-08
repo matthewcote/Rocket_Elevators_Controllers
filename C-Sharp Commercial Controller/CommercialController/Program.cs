@@ -222,7 +222,7 @@ namespace CommercialController
         public int topfloor;
         int elevAmt;
 
-        public List<object> btns = new List<object>(); // don't know yet whether they will hold buttons or call buttons! Iamnerd!
+        public List<Button> btns = new List<Button>(); // Button
         public List<Elevator> els = new List<Elevator>(); // don't know yet whether they will hold Elevators or modern elevators! 
 
         public Column(int setorigin, int setbottomfloor, int settopfloor, int setelevAmt, string setname) // this is a modern column, notice the difference
@@ -249,7 +249,7 @@ namespace CommercialController
             }
             if (bottomfloor != origin) { 
                 Button b = new Button(origin); // make up button
-                btns.Add(origin); // add to list 
+                btns.Add(b); // add to list 
             }
         } // ints before string is sooooooo modern
 
@@ -486,7 +486,6 @@ namespace CommercialController
     }
 
     
-
     class Program
     {
         static void Main(string[] args)

@@ -1,75 +1,42 @@
 import java.util.*;
+
+
 public class Elevator extends FloorDisplay
 {
-	private int name;
-	private int bottomfloor;
-	private int topfloor;
-	private int origin;
-	private int floor;
-	private Status status;
-	
-	private FloorDisplay floordisplay;
+
+	public String name;
+	public FloorDisplay fd;
 	private Door door;
 	
 	//Creating a List using ArrayList  
-	private List<Button> buttons = new ArrayList<Button>();  
 	private List<FloorDoor> floordoors = new ArrayList<FloorDoor>();
 	private List<Integer> floors = new ArrayList<Integer>();
 	
-	public Elevator(int initname, int botfloor, int tpflr, int initorigin) { // call this constructor if origin is not bottom floor
-		super(initorigin); // inherits floor and status from floordisplay
+	public Elevator(String initname, int bottomfloor, int topfloor, int origin) { // Modern Elevator
+		super(origin); // inherits floor and status from floordisplay
 		name = initname;
-        bottomfloor = botfloor;
-        topfloor = tpflr;
-        origin = initorigin;
         door = new Door();
-        floordisplay = new FloorDisplay(origin);
-        Button button = new Button(origin);
-        buttons.add(button);
-        FloorDoor floordoor = new FloorDoor(origin);
+        fd = new FloorDisplay(origin);
+		
+		if (origin != bottomfloor)
+		{
+		FloorDoor floordoor = new FloorDoor(origin);
         floordoors.add(floordoor);
-        
+		}
         for (int i = bottomfloor; i <= topfloor; i++)
         {
-        	Button btn = new Button(i);
-            buttons.add(btn);
             FloorDoor flrdoor = new FloorDoor(i);
             floordoors.add(flrdoor);
         }
-	}
-	
-	public Elevator(int initname, int botfloor, int tpflr) { // call this constructor if origin is bottom floor
-		super(botfloor);
-		name = initname;
-		bottomfloor = botfloor;
-		topfloor = tpflr;
-		origin = bottomfloor;
-		
-		door = new Door();
-		floordisplay = new FloorDisplay(origin);
-		
-		for (int i = bottomfloor; i <= topfloor; i++)
-        {
-        	Button btn = new Button(i);
-            buttons.add(btn);
-            FloorDoor flrdoor = new FloorDoor(i);
-            floordoors.add(flrdoor);
-        }
-		
-		
-		
-		
 	}
 	
 	public void setStatus(int setfloor, Status setstatus) {
-		floor = setfloor;
-		status = setstatus;
-		floordisplay.setstatus(setfloor, setstatus);
+		setstatus(setfloor, setstatus);
 	}
 	
-	public void pushfloors(int targetfloor) {
+	public void PushFloor(int targetfloor) {
 		floors.add(targetfloor);
-		if (targetfloor == floor) 
+		if (targetfloor == fd.floor) 
 		{
 			setStatus(floor, Status.Idle);
 			stop();
@@ -77,20 +44,36 @@ public class Elevator extends FloorDisplay
 		else if (targetfloor > floor)
 		{
 			setStatus(floor, Status.Up);
+			Display();
 			move();
 		}
 		else 
 		{
 			setStatus(floor, Status.Down);
+			Display();
 			move();
 		}
 	} // End pushfloors
 	
-	public void move() {
-		if (status == Status.Up)
+	private void move() {
+		if (floors.contains(floor)){ 
+				stop();
+		}
+		if (fd.status == Status.Up)
 		{
 			floor += 1;
 			setStatus(floor, status);
+			Display();
+			if (floors.contains(floor))
+				stop();
+			else 
+				move();
+		}
+		if (fd.status == Status.Down)
+		{
+			floor += 1;
+			setStatus(floor, fd.status);
+			Display();
 			if (floors.contains(floor))
 				stop();
 			else 
@@ -98,7 +81,7 @@ public class Elevator extends FloorDisplay
 		}
 	} // End move
 	
-	public void stop() {
+	private void stop() {
 		floors.remove(floor);
 		setDoors(true);
 		if (floors.isEmpty())
@@ -112,6 +95,11 @@ public class Elevator extends FloorDisplay
 		// TODO
 	}
 	
+	public void Display() 
+	{
+		// TODO
+	}
+
 	private void sleep(int milliseconds) 
 	{
 		// TODO

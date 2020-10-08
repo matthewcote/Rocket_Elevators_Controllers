@@ -1,8 +1,8 @@
 public class FloorDisplay 
 {
-	private int floor;
-	public enum Status { Idle, Up, Down};
-	private Status status;
+	public int floor;
+	public enum Status {Idle, Up, Down};
+	public Status status;
 	
 	public FloorDisplay(int initfloor) 
 	{
@@ -16,5 +16,4 @@ public class FloorDisplay
 		floor = setfloor;
 		status = setstatus;
 	}
-	
 }
