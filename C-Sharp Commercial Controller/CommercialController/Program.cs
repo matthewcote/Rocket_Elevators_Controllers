@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Media;
 
 namespace CommercialController
 {
-    enum Status: int {Idle, Down, Up};
-    
+    enum Status: int {Idle, Down, Up, Left, Right, A, B};
 
     class Button 
     {
@@ -75,6 +75,25 @@ namespace CommercialController
             status = setstatus;
             floor = setfloor;
         }
+
+        public void konami (string name, Status setstatus, int setfloor)
+        {
+            ConsoleColor[] colors = {ConsoleColor.Red, ConsoleColor.Cyan, ConsoleColor.Yellow, ConsoleColor.Magenta, ConsoleColor.Blue};
+            int color = (int) setstatus;
+            Console.ForegroundColor = ConsoleColor.Green;
+            Console.Write("Elevator: ");
+            Console.Write(name);
+            Console.ForegroundColor = ConsoleColor.Green;
+            Console.Write(" Floor: ");
+            Console.ForegroundColor = ConsoleColor.Yellow;
+            Console.Write(setfloor);
+            Console.ForegroundColor = ConsoleColor.Green;
+            Console.Write(" Status: ");
+            Console.ForegroundColor = colors[color % 4];
+            Console.Write(setstatus);
+            Console.ResetColor();
+            Console.Write("\n");
+        }
     }
 
     class Elevator // a modern elevator
@@ -128,6 +147,10 @@ namespace CommercialController
 
         public void Move() 
         {
+            if (fd.floor == 42) {
+                konami();
+            }
+            
             if (floors.Contains(fd.floor)) {
                 Stop();
             }
@@ -157,11 +180,29 @@ namespace CommercialController
             }
         }
 
+        private void konami() {
+            Console.ForegroundColor = ConsoleColor.Magenta;
+            Console.Write("Elevator: ");
+            Console.Write(name);
+            Console.Write(" does the Konami!");
+            Console.WriteLine();
+            fd.konami(name, Status.Up, 42);
+            fd.konami(name, Status.Up, 42);
+            fd.konami(name, Status.Down, 42);
+            fd.konami(name, Status.Down, 42);
+            fd.konami(name, Status.Left, 42);
+            fd.konami(name, Status.Right, 42);
+            fd.konami(name, Status.Left, 42);
+            fd.konami(name, Status.Right, 42);
+            fd.konami(name, Status.A, 42);
+            fd.konami(name, Status.B, 42);
+        }
+        
         public void Display()
         {
             Console.ForegroundColor = ConsoleColor.Green;
             Console.Write("Elevator: ");
-            Console.ForegroundColor = ConsoleColor.Yellow;
+            Console.Write("Elevator: ");
             Console.Write(name);
             Console.ForegroundColor = ConsoleColor.Green;
             Console.Write(" Floor: ");
@@ -485,12 +526,11 @@ namespace CommercialController
         }
     }
 
-    
     class Program
     {
         static void Main(string[] args)
         {
-            Console.ForegroundColor = ConsoleColor.Red;
+            Console.BackgroundColor = ConsoleColor.Red;
             string datePatt = @"M/d/yyyy hh:mm:ss tt";
             
             void DisplayNow(string title, DateTime inputDt)
@@ -601,7 +641,10 @@ namespace CommercialController
                 bat.RequestElevator(54);
     
                 Console.ResetColor();
+                Console.Beep();
             }
+
+
 
             void Scenario4() {
                 DateTime saveNow = DateTime.Now;
