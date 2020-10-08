@@ -196,7 +196,7 @@ type Column struct {
 	elevators                              []Elevator
 }
 
-func (c *Column) AddModernColumn(name string, origin, bottomfloor, topfloor, elevAmt int) {
+func (c *Column) ModernColumn(name string, origin, bottomfloor, topfloor, elevAmt int) {
 	c.name = name
 	c.origin = origin
 	c.bottomfloor = bottomfloor
@@ -383,59 +383,88 @@ func (c *Column) AssignElevator(target int) { // Person is at origin, they want 
 }
 
 type Battery struct {
-	origin  int
 	columns []Column
 }
 
-func scenario1() {
-	c := &Column{}
-	c.AddModernColumn("B", 1, 1, 20, 5)
-	c.elevators[0].floordisplay.SetDisplay(20, 1) // number, status
-	c.elevators[1].floordisplay.SetDisplay(3, 2)  // number, status
-	c.elevators[2].floordisplay.SetDisplay(13, 1) // number, status
-	c.elevators[3].floordisplay.SetDisplay(15, 1) // number, status
-	c.elevators[4].floordisplay.SetDisplay(6, 1)  // number, status
-	c.AssignElevator(20)
+func (b *Battery) RequestElevator(target int) {
+	for i := 0; i < len(b.columns); i++ {
+		if target >= b.columns[i].bottomfloor && target <= b.columns[i].topfloor {
+			b.columns[i].RequestElevator(target)
+		}
+	}
 }
 
-func scenario2() {
+func (b *Battery) AssignElevator(target int) {
+	for i := 0; i < len(b.columns); i++ {
+		if target >= b.columns[i].bottomfloor && target <= b.columns[i].topfloor {
+			b.columns[i].AssignElevator(target)
+		}
+	}
+} 
+
+func (bat *Battery) fillcolumns() {
+	
+	a := &Column{}
+	a.ModernColumn("A", 1, -6, -1, 5)
+	bat.columns = append(bat.columns, *a);
+	b := &Column{}
+	b.ModernColumn("B", 1, 1, 20, 5)
+	bat.columns = append(bat.columns, *b);	
 	c := &Column{}
-	c.AddModernColumn("C", 1, 21, 40, 5)
-	c.elevators[0].floordisplay.SetDisplay(1, 0)  // number, status
-	c.elevators[1].floordisplay.SetDisplay(23, 2) // number, status
-	c.elevators[2].floordisplay.SetDisplay(33, 1) // number, status
-	c.elevators[3].floordisplay.SetDisplay(40, 1) // number, status
-	c.elevators[4].floordisplay.SetDisplay(39, 1) // number, status
-	c.AssignElevator(36)
+	c.ModernColumn("C", 1, 21, 40, 5)
+	bat.columns = append(bat.columns, *c);
+	d := &Column{}
+	d.ModernColumn("D", 1, 41, 60, 5)
+	bat.columns = append(bat.columns, *d);
 }
 
-func scenario3() {
-	c := &Column{}
-	c.AddModernColumn("D", 1, 41, 60, 5)
-	c.elevators[0].floordisplay.SetDisplay(58, 1) // number, status
-	c.elevators[1].floordisplay.SetDisplay(50, 2) // number, status
-	c.elevators[2].floordisplay.SetDisplay(46, 2) // number, status
-	c.elevators[3].floordisplay.SetDisplay(1, 2)  // number, status
-	c.elevators[4].floordisplay.SetDisplay(60, 1) // number, status
-	c.RequestElevator(54)
+func (b *Battery) scenario1() {
+
+	b.columns[1].elevators[0].floordisplay.SetDisplay(20, 1) // number, status
+	b.columns[1].elevators[1].floordisplay.SetDisplay(3, 2)  // number, status
+	b.columns[1].elevators[2].floordisplay.SetDisplay(13, 1) // number, status
+	b.columns[1].elevators[3].floordisplay.SetDisplay(15, 1) // number, status
+	b.columns[1].elevators[4].floordisplay.SetDisplay(6, 1)  // number, status
+	b.AssignElevator(20)
 }
 
-func scenario4() {
-	c := &Column{}
-	c.AddModernColumn("A", 1, -6, -1, 5)
-	c.elevators[0].floordisplay.SetDisplay(-4, 0) // number, status
-	c.elevators[1].floordisplay.SetDisplay(1, 0)  // number, status
-	c.elevators[2].floordisplay.SetDisplay(-3, 1) // number, status
-	c.elevators[3].floordisplay.SetDisplay(-6, 2) // number, status
-	c.elevators[4].floordisplay.SetDisplay(-1, 1) // number, status
+func (b *Battery) scenario2() {
+
+	b.columns[2].elevators[0].floordisplay.SetDisplay(1, 0)  // number, status
+	b.columns[2].elevators[1].floordisplay.SetDisplay(23, 2) // number, status
+	b.columns[2].elevators[2].floordisplay.SetDisplay(33, 1) // number, status
+	b.columns[2].elevators[3].floordisplay.SetDisplay(40, 1) // number, status
+	b.columns[2].elevators[4].floordisplay.SetDisplay(39, 1) // number, status
+	b.AssignElevator(36)
+}
+
+func (b *Battery) scenario3() {
+
+	b.columns[3].elevators[0].floordisplay.SetDisplay(58, 1) // number, status
+	b.columns[3].elevators[1].floordisplay.SetDisplay(50, 2) // number, status
+	b.columns[3].elevators[2].floordisplay.SetDisplay(46, 2) // number, status
+	b.columns[3].elevators[3].floordisplay.SetDisplay(1, 2)  // number, status
+	b.columns[3].elevators[4].floordisplay.SetDisplay(60, 1) // number, status
+	b.RequestElevator(54)
+}
+
+func (b *Battery) scenario4() {
+
+	b.columns[0].elevators[0].floordisplay.SetDisplay(-4, 0) // number, status
+	b.columns[0].elevators[1].floordisplay.SetDisplay(1, 0)  // number, status
+	b.columns[0].elevators[2].floordisplay.SetDisplay(-3, 1) // number, status
+	b.columns[0].elevators[3].floordisplay.SetDisplay(-6, 2) // number, status
+	b.columns[0].elevators[4].floordisplay.SetDisplay(-1, 1) // number, status
 	fmt.Println("I just requested an elevator --------------------------------------------------------------")
-	c.RequestElevator(-3)
+	b.RequestElevator(-3)
 }
 
 func main() {
+	battery := Battery{}
+	battery.fillcolumns()
+	battery.scenario1()
+	battery.scenario2()
+	battery.scenario3()
+	battery.scenario4()
 
-	scenario1()
-	scenario2()
-	scenario3()
-	scenario4()
 }
