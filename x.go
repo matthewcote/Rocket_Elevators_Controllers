@@ -39,9 +39,10 @@ func (x *Button) Deactivate() {
 	fmt.Println("Button Activated")
 }
 
-type CallButton struct {
-	button    Button
+type CallButton struct { // floor, direction, status
+	floor     int
 	direction bool
+	status    bool
 }
 
 func (x *CallButton) DisplayCallButton() {
@@ -400,25 +401,26 @@ func (b *Battery) AssignElevator(target int) {
 			b.columns[i].AssignElevator(target)
 		}
 	}
-} 
-
-func (bat *Battery) fillcolumns() {
-	
-	a := &Column{}
-	a.ModernColumn("A", 1, -6, -1, 5)
-	bat.columns = append(bat.columns, *a);
-	b := &Column{}
-	b.ModernColumn("B", 1, 1, 20, 5)
-	bat.columns = append(bat.columns, *b);	
-	c := &Column{}
-	c.ModernColumn("C", 1, 21, 40, 5)
-	bat.columns = append(bat.columns, *c);
-	d := &Column{}
-	d.ModernColumn("D", 1, 41, 60, 5)
-	bat.columns = append(bat.columns, *d);
 }
 
-func (b *Battery) scenario1() {
+func (bat *Battery) fillcolumns() {
+
+	a := &Column{}
+	a.ModernColumn("A", 1, -6, -1, 5)
+	bat.columns = append(bat.columns, *a)
+	b := &Column{}
+	b.ModernColumn("B", 1, 1, 20, 5)
+	bat.columns = append(bat.columns, *b)
+	c := &Column{}
+	c.ModernColumn("C", 1, 21, 40, 5)
+	bat.columns = append(bat.columns, *c)
+	d := &Column{}
+	d.ModernColumn("D", 1, 41, 60, 5)
+	bat.columns = append(bat.columns, *d)
+}
+
+// Modern Simulation Test Scenarios
+func (b *Battery) ModScenario1() {
 
 	b.columns[1].elevators[0].floordisplay.SetDisplay(20, 1) // number, status
 	b.columns[1].elevators[1].floordisplay.SetDisplay(3, 2)  // number, status
@@ -428,7 +430,7 @@ func (b *Battery) scenario1() {
 	b.AssignElevator(20)
 }
 
-func (b *Battery) scenario2() {
+func (b *Battery) ModScenario2() {
 
 	b.columns[2].elevators[0].floordisplay.SetDisplay(1, 0)  // number, status
 	b.columns[2].elevators[1].floordisplay.SetDisplay(23, 2) // number, status
@@ -438,7 +440,7 @@ func (b *Battery) scenario2() {
 	b.AssignElevator(36)
 }
 
-func (b *Battery) scenario3() {
+func (b *Battery) ModScenario3() {
 
 	b.columns[3].elevators[0].floordisplay.SetDisplay(58, 1) // number, status
 	b.columns[3].elevators[1].floordisplay.SetDisplay(50, 2) // number, status
@@ -448,7 +450,7 @@ func (b *Battery) scenario3() {
 	b.RequestElevator(54)
 }
 
-func (b *Battery) scenario4() {
+func (b *Battery) ModScenario4() {
 
 	b.columns[0].elevators[0].floordisplay.SetDisplay(-4, 0) // number, status
 	b.columns[0].elevators[1].floordisplay.SetDisplay(1, 0)  // number, status
@@ -459,12 +461,266 @@ func (b *Battery) scenario4() {
 	b.RequestElevator(-3)
 }
 
+type ClassicColumn struct {
+	name                                   string
+	origin, bottomfloor, topfloor, elevAmt int
+	buttons                                []CallButton
+	elevators                              []Elevator
+}
+
+func (c *ClassicColumn) MakeClassicColumn(name string, origin, bottomfloor, topfloor, elevAmt int) {
+	c.name = name
+	c.origin = origin
+	c.bottomfloor = bottomfloor
+	c.topfloor = topfloor
+	c.elevAmt = elevAmt
+
+	// Classic Column gets CallButtons with direction for each floor except origin
+	// these buttons would represent a call to origin - would be at origin.
+	// TODO - make sure the they go out when the elevator arrives, then open that elevator floordoor and deactivate the light, all fun stuff.
+	if c.bottomfloor == c.origin {
+		for i := bottomfloor; i <= topfloor; i++ {
+			if i != topfloor {
+				b := &CallButton{i, true, false}
+				c.buttons = append(c.buttons, *b)
+			}
+			if i != bottomfloor {
+				b := &CallButton{i, false, false}
+				c.buttons = append(c.buttons, *b)
+			}
+		}
+	} // thats an easy classic elevator - but if the origin is not the bottom floor - uhg....
+	if c.bottomfloor != c.origin {
+		if c.bottomfloor < c.origin { // basement column add a button at the origin going down
+			b := &CallButton{origin, false, false}
+			c.buttons = append(c.buttons, *b)
+			// and add a button at the top floor going up
+			bup := &CallButton{origin, true, false}
+			c.buttons = append(c.buttons, *bup)
+		}
+		if c.bottomfloor < c.origin { // more than zero column
+			b := &CallButton{origin, true, false} // add a button at the origin going up
+			c.buttons = append(c.buttons, *b)
+			// and add a button at the top floor going down
+			bup := &CallButton{c.bottomfloor, false, false}
+			c.buttons = append(c.buttons, *bup)
+		}
+	}
+	// and lets not forget the elevators
+	for i := 0; i < c.elevAmt; i++ {
+		e := &Elevator{}
+		s := strconv.Itoa(i + 1)
+		e.ClassicElevator(c.bottomfloor, c.topfloor, c.origin, c.name+s)
+		c.elevators = append(c.elevators, *e)
+		fmt.Println("Added Elevator with name ", c.name+s)
+		e.Display()
+	}
+}
+
+func (c *ClassicColumn) RequestElevator(target int, direction bool) { // person is at the target, and they want to go in direction
+	// what to do, look through elevators
+	elchoice := -1
+	diff := 0
+	bestdiff := 999
+
+	if direction { // if person wants to go up
+		fmt.Println(c.elevators[4].floordisplay.status)
+		for i := 0; i < c.elevAmt; i++ { // first priority - elevator at target
+			if c.elevators[i].floordisplay.floor == target && c.elevators[i].floordisplay.status != 1 { // if we find a elevator at the target - that was easy
+				c.elevators[i].PushFloor(c.origin)
+				return
+			} // second priority, closest elevator under target going up
+			if c.elevators[i].floordisplay.floor < target && c.elevators[i].floordisplay.status == 2 {
+				diff = target - c.elevators[i].floordisplay.floor
+				if diff < bestdiff {
+					elchoice = i
+					bestdiff = diff
+				}
+			}
+		}
+		if elchoice != -1 { // a elevator was found moving up towards target, this is the closest one.
+			c.elevators[elchoice].PushFloor(target)
+			c.elevators[elchoice].PushFloor(c.origin)
+		}
+		if elchoice == -1 { // a elevator was not found moving up towards the target - look for closest idle elevator
+			for i := 0; i < c.elevAmt; i++ {
+				if c.elevators[i].floordisplay.floor > target && c.elevators[i].floordisplay.status == 0 {
+					diff = c.elevators[i].floordisplay.floor - target
+					if diff < bestdiff {
+						elchoice = i
+						bestdiff = diff
+					}
+				}
+				if c.elevators[i].floordisplay.floor < target && c.elevators[i].floordisplay.status == 0 {
+					diff = target - c.elevators[i].floordisplay.floor
+					if diff < bestdiff {
+						elchoice = i
+						bestdiff = diff
+					}
+				}
+			}
+			if elchoice == -1 {
+				for i := 0; i < c.elevAmt; i++ {
+					if c.elevators[i].floordisplay.floor > target && c.elevators[i].floordisplay.status == 1 {
+						diff = c.elevators[i].floordisplay.floor - target
+						if diff < bestdiff {
+							elchoice = i
+							bestdiff = diff
+						}
+					}
+					if c.elevators[i].floordisplay.floor < target && c.elevators[i].floordisplay.status == 2 {
+						diff = target - c.elevators[i].floordisplay.floor
+						if diff < bestdiff {
+							elchoice = i
+							bestdiff = diff
+						}
+					}
+				}
+				c.elevators[elchoice].PushFloor(target)
+				c.elevators[elchoice].PushFloor(c.origin)
+			}
+			c.elevators[elchoice].PushFloor(target)
+			c.elevators[elchoice].PushFloor(c.origin)
+		}
+
+	}
+
+	if !direction { // if person wants to go down
+		for i := 0; i < c.elevAmt; i++ {
+			if c.elevators[i].floordisplay.floor == target && c.elevators[i].floordisplay.status != 2 { // first priority - elevator at target
+				c.elevators[i].PushFloor(c.origin)
+				return
+			} // second priority, closest elevator above target going down
+			if c.elevators[i].floordisplay.floor > target && c.elevators[i].floordisplay.status == 1 {
+				diff = c.elevators[i].floordisplay.floor - target
+				if diff < bestdiff {
+					elchoice = i
+					bestdiff = diff
+				}
+			}
+		}
+		if elchoice != -1 { // a elevator was found moving towards target, this is the closest one.
+			c.elevators[elchoice].PushFloor(target)
+			c.elevators[elchoice].PushFloor(c.origin)
+			return
+		}
+		if elchoice == -1 { // a elevator was not found moving towards the target - look for closest idle elevator
+			for i := 0; i < c.elevAmt; i++ {
+				if c.elevators[i].floordisplay.floor > target && c.elevators[i].floordisplay.status == 0 {
+					diff = c.elevators[i].floordisplay.floor - target
+					if diff < bestdiff {
+						elchoice = i
+						bestdiff = diff
+					}
+				}
+				if c.elevators[i].floordisplay.floor < target && c.elevators[i].floordisplay.status == 0 {
+					diff = target - c.elevators[i].floordisplay.floor
+					if diff < bestdiff {
+						elchoice = i
+						bestdiff = diff
+					}
+				}
+			}
+			c.elevators[elchoice].PushFloor(target)
+			c.elevators[elchoice].PushFloor(c.origin)
+		}
+	}
+}
+
+func (c *ClassicColumn) AssignElevator(Elevator int, RequestedFloor int) {
+	c.elevators[Elevator].PushFloor(RequestedFloor)
+}
+
+type ClassicBattery struct {
+	columns []ClassicColumn
+}
+
+func (bat *ClassicBattery) fillclassiccolumns() {
+	a := &ClassicColumn{}
+	a.MakeClassicColumn("A", 1, -6, -1, 5)
+	bat.columns = append(bat.columns, *a)
+	b := &ClassicColumn{}
+	b.MakeClassicColumn("B", 1, 1, 20, 5)
+	bat.columns = append(bat.columns, *b)
+	c := &ClassicColumn{}
+	c.MakeClassicColumn("C", 1, 21, 40, 5)
+	bat.columns = append(bat.columns, *c)
+	d := &ClassicColumn{}
+	d.MakeClassicColumn("D", 1, 41, 60, 5)
+	bat.columns = append(bat.columns, *d)
+}
+
+func (b *ClassicBattery) RequestElevator(FloorNumber int, Direction bool) {
+	// This will simply call a elevator to the target floornumber
+	for i := 0; i < len(b.columns); i++ {
+		if FloorNumber >= b.columns[i].bottomfloor && FloorNumber <= b.columns[i].topfloor {
+			b.columns[i].RequestElevator(FloorNumber, Direction)
+		}
+	}
+}
+
+func (b *ClassicBattery) AssignElevator(Elevator int, RequestedFloor int) { // This will simply call this specific elevator to the target floornumber
+	for i := 0; i < len(b.columns); i++ {
+		if RequestedFloor >= b.columns[i].bottomfloor && RequestedFloor <= b.columns[i].topfloor {
+			b.columns[i].AssignElevator(Elevator, RequestedFloor)
+		}
+	}
+}
+
+func (b *ClassicBattery) ClassicScenario1() {
+
+	b.columns[1].elevators[0].floordisplay.SetDisplay(20, 1) // number, status
+	b.columns[1].elevators[1].floordisplay.SetDisplay(3, 2)  // number, status
+	b.columns[1].elevators[2].floordisplay.SetDisplay(13, 1) // number, status
+	b.columns[1].elevators[3].floordisplay.SetDisplay(15, 1) // number, status
+	b.columns[1].elevators[4].floordisplay.SetDisplay(6, 1)  // number, status
+	b.RequestElevator(1, true)
+	b.AssignElevator(4, 20)
+}
+
+func (b *ClassicBattery) ClassicScenario2() {
+
+	b.columns[2].elevators[0].floordisplay.SetDisplay(1, 0)  // number, status
+	b.columns[2].elevators[1].floordisplay.SetDisplay(23, 2) // number, status
+	b.columns[2].elevators[2].floordisplay.SetDisplay(33, 1) // number, status
+	b.columns[2].elevators[3].floordisplay.SetDisplay(40, 1) // number, status
+	b.columns[2].elevators[4].floordisplay.SetDisplay(39, 1) // number, status
+	b.columns[2].RequestElevator(1, true)
+	b.columns[2].AssignElevator(0, 36)
+}
+
+func (b *ClassicBattery) ClassicScenario3() {
+
+	b.columns[3].elevators[0].floordisplay.SetDisplay(58, 1) // number, status
+	b.columns[3].elevators[1].floordisplay.SetDisplay(50, 2) // number, status
+	b.columns[3].elevators[2].floordisplay.SetDisplay(46, 2) // number, status
+	b.columns[3].elevators[3].floordisplay.SetDisplay(1, 2)  // number, status
+	b.columns[3].elevators[4].floordisplay.SetDisplay(60, 1) // number, status
+	b.RequestElevator(54, false)
+}
+
+func (b *ClassicBattery) ClassicScenario4() {
+
+	b.columns[0].elevators[0].floordisplay.SetDisplay(-4, 0) // number, status
+	b.columns[0].elevators[1].floordisplay.SetDisplay(1, 0)  // number, status
+	b.columns[0].elevators[2].floordisplay.SetDisplay(-3, 1) // number, status
+	b.columns[0].elevators[3].floordisplay.SetDisplay(-6, 2) // number, status
+	b.columns[0].elevators[4].floordisplay.SetDisplay(-1, 1) // number, status
+	b.RequestElevator(-3, true)
+	
+}
+
 func main() {
-	battery := Battery{}
-	battery.fillcolumns()
-	battery.scenario1()
-	battery.scenario2()
-	battery.scenario3()
-	battery.scenario4()
+	battery := ClassicBattery{}
+	battery.fillclassiccolumns() // modern approach
+	battery.ClassicScenario1()
+	battery.ClassicScenario2()
+	battery.ClassicScenario3()
+	battery.ClassicScenario4()
+
+	// battery.ModScenario1()
+	// battery.ModScenario2()
+	// battery.ModScenario3()
+	// battery.ModScenario4()
 
 }
