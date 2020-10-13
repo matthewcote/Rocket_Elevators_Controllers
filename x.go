@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"strconv"
+	"time"
 )
 
 type Door struct {
@@ -707,10 +708,16 @@ func (b *ClassicBattery) ClassicScenario4() {
 	b.columns[0].elevators[3].floordisplay.SetDisplay(-6, 2) // number, status
 	b.columns[0].elevators[4].floordisplay.SetDisplay(-1, 1) // number, status
 	b.RequestElevator(-3, true)
-	
+
 }
 
 func main() {
+
+	fmt.Println("Rocket Elevator Simulation: ")
+	text2 := ""
+	fmt.Scanln(text2)
+	fmt.Println(text2)
+
 	battery := ClassicBattery{}
 	battery.fillclassiccolumns() // modern approach
 	battery.ClassicScenario1()
@@ -718,6 +725,16 @@ func main() {
 	battery.ClassicScenario3()
 	battery.ClassicScenario4()
 
+	fmt.Printf("Current Unix Time: %v\n", time.Now().Format)
+
+	time.Sleep(2000 * time.Millisecond)
+
+
+
+	seconds := 10
+
+	time.Sleep(time.Duration(seconds) * time.Second)
+	fmt.Printf("Current Unix Time: %v\n", time.Now().Unix())
 	// battery.ModScenario1()
 	// battery.ModScenario2()
 	// battery.ModScenario3()

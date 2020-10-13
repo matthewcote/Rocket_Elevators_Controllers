@@ -1,5 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Threading;
 
 namespace CommercialController
 {
@@ -528,23 +532,86 @@ namespace CommercialController
 
     class Program
     {
+        private static void StarWars() {
+             Console.Beep(300, 500);
+             Thread.Sleep(50); 
+             Console.Beep(300, 500);
+             Thread.Sleep(50);
+             Console.Beep(300, 500);
+             Thread.Sleep(50);
+             Console.Beep(250, 500);
+             Thread.Sleep(50);
+             Console.Beep(350, 250);
+             Console.Beep(300, 500);
+             Thread.Sleep(50);
+             Console.Beep(250, 500);
+             Thread.Sleep(50);
+             Console.Beep(350, 250);
+             Console.Beep(300, 500);
+             Thread.Sleep(50); 
+    }
+
         static void Main(string[] args)
         {
-            Console.BackgroundColor = ConsoleColor.Red;
+            // string for datepattern
             string datePatt = @"M/d/yyyy hh:mm:ss tt";
-            
+            // display now utility function for fun
             void DisplayNow(string title, DateTime inputDt)
             {
                 string dtString = inputDt.ToString(datePatt);
                 Console.WriteLine("{0} {1}",
                 title, dtString);
             }
+             
+            DateTime saveNow = DateTime.Now;
+            DateTime myDt;
+            myDt = DateTime.SpecifyKind(saveNow, DateTimeKind.Local);
+            Console.ForegroundColor = ConsoleColor.Red;
+            Console.WriteLine("");
+            Console.WriteLine("ATTENTION - SIMULATION BEGINNING");
+            Console.Beep();
+            DisplayNow("Simulation 1: Beginning computation now .............", saveNow);
+        
 
+            Console.WriteLine("What simulation would you like to see?");
+            Console.WriteLine("Enter: 1 - For simution 1");
+            Console.WriteLine("Enter: 2 - For simution 2");
+            Console.WriteLine("Enter: 3 - For simution 3");
+            Console.WriteLine("Enter: 4 - For simution 4");
+            Console.WriteLine("Enter: 5 - To Exit simution");
+            int x = int.Parse(Console.ReadLine());
+            while (x != 5){ 
+                if (x == 1) {
+                    Scenario1();
+                    x = int.Parse(Console.ReadLine());
+                }
+
+                if (x == 2) {
+                    Scenario2();
+                    x = int.Parse(Console.ReadLine());
+                }
+
+                if (x == 3) {
+                    Scenario3();
+                    x = int.Parse(Console.ReadLine());
+                }
+
+                if (x == 4) {
+                    Scenario4();
+                    x = int.Parse(Console.ReadLine());
+                }
+
+                if (5 == 5) {
+                    StarWars();
+                }
+            }
             void Scenario1() {
                 DateTime saveNow = DateTime.Now;
                 DateTime myDt;
                 myDt = DateTime.SpecifyKind(saveNow, DateTimeKind.Local);
                 Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine("");
+                Console.Beep();
                 Console.WriteLine("ATTENTION - SIMULATION BEGINNING");
                 DisplayNow("Simulation 1: Beginning computation now .............", saveNow);
 
@@ -572,6 +639,22 @@ namespace CommercialController
                 bat.AssignElevator(20);
     
                 Console.ResetColor();
+
+                saveNow = DateTime.Now;
+                myDt = DateTime.SpecifyKind(saveNow, DateTimeKind.Local);
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine("");
+                Console.WriteLine("ATTENTION - SIMULATION OVER");
+                DisplayNow("Time: ", saveNow);
+                Console.WriteLine("");
+
+                Console.WriteLine("What simulation would you like to see?");
+                Console.WriteLine("Enter: 1 - For simution 1");
+                Console.WriteLine("Enter: 2 - For simution 2");
+                Console.WriteLine("Enter: 3 - For simution 3");
+                Console.WriteLine("Enter: 4 - For simution 4");
+                Console.WriteLine("Enter: 5 - To Exit simution");
+    
             }
 
             void Scenario2() 
@@ -580,6 +663,8 @@ namespace CommercialController
                 DateTime myDt;
                 myDt = DateTime.SpecifyKind(saveNow, DateTimeKind.Local);
                 Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine("");
+                Console.Beep();
                 Console.WriteLine("ATTENTION - SIMULATION BEGINNING");
                 DisplayNow("Simulation - 2 started at .............", saveNow);
 
@@ -607,6 +692,19 @@ namespace CommercialController
                 bat.AssignElevator(36);
     
                 Console.ResetColor();
+                saveNow = DateTime.Now;
+                myDt = DateTime.SpecifyKind(saveNow, DateTimeKind.Local);
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine("");
+                Console.WriteLine("ATTENTION - SIMULATION OVER");
+                DisplayNow("Time: ", saveNow);
+                Console.WriteLine("");
+                Console.WriteLine("What simulation would you like to see?");
+                Console.WriteLine("Enter: 1 - For simution 1");
+                Console.WriteLine("Enter: 2 - For simution 2");
+                Console.WriteLine("Enter: 3 - For simution 3");
+                Console.WriteLine("Enter: 4 - For simution 4");
+                Console.WriteLine("Enter: 5 - To Exit simution");
             }
 
             void Scenario3() {
@@ -614,7 +712,9 @@ namespace CommercialController
                 DateTime myDt;
                 myDt = DateTime.SpecifyKind(saveNow, DateTimeKind.Local);
                 Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine("");                
                 Console.WriteLine("ATTENTION - SIMULATION BEGINNING");
+                Console.Beep();
                 DisplayNow("Simulation - 3 started at .............", saveNow);
 
                 Battery bat = new Battery();
@@ -637,20 +737,30 @@ namespace CommercialController
                 bat.clmns[3].els[3].Display(3);
                 bat.clmns[3].els[4].fd.SetDisplay(Status.Down,60);
                 bat.clmns[3].els[4].Display(4);
-
                 bat.RequestElevator(54);
-    
                 Console.ResetColor();
-                Console.Beep();
+                saveNow = DateTime.Now;
+                myDt = DateTime.SpecifyKind(saveNow, DateTimeKind.Local);
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine("");
+                Console.WriteLine("ATTENTION - SIMULATION OVER");
+                DisplayNow("Time: ", saveNow);
+                Console.WriteLine("");
+                Console.WriteLine("What simulation would you like to see?");
+                Console.WriteLine("Enter: 1 - For simution 1");
+                Console.WriteLine("Enter: 2 - For simution 2");
+                Console.WriteLine("Enter: 3 - For simution 3");
+                Console.WriteLine("Enter: 4 - For simution 4");
+                Console.WriteLine("Enter: 5 - To Exit simution");
             }
-
-
 
             void Scenario4() {
                 DateTime saveNow = DateTime.Now;
                 DateTime myDt;
                 myDt = DateTime.SpecifyKind(saveNow, DateTimeKind.Local);
                 Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine("");         
+                Console.Beep();       
                 Console.WriteLine("ATTENTION - SIMULATION BEGINNING");
                 DisplayNow("Simulation - 4 started at .............", saveNow);
 
@@ -678,23 +788,33 @@ namespace CommercialController
                 bat.RequestElevator(-3);
     
                 Console.ResetColor();
+                saveNow = DateTime.Now;
+                myDt = DateTime.SpecifyKind(saveNow, DateTimeKind.Local);
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine("");
+                Console.WriteLine("ATTENTION - SIMULATION OVER");
+                DisplayNow("Time: ", saveNow);
+                Console.WriteLine("");
+                Console.WriteLine("What simulation would you like to see?");
+                Console.WriteLine("Enter: 1 - For simution 1");
+                Console.WriteLine("Enter: 2 - For simution 2");
+                Console.WriteLine("Enter: 3 - For simution 3");
+                Console.WriteLine("Enter: 4 - For simution 4");
+                Console.WriteLine("Enter: 5 - To Exit simution");
             }
 
-            DateTime saveNow = DateTime.Now;
-            DateTime myDt;
-            myDt = DateTime.SpecifyKind(saveNow, DateTimeKind.Local);
-            Console.ForegroundColor = ConsoleColor.Red;
-            DisplayNow("Simulation started at .............", saveNow);
+    Console.Beep(659, 125); Console.Beep(659, 125); Thread.Sleep(125); Console.Beep(659, 125); Thread.Sleep(167); Console.Beep(523, 125); Console.Beep(659, 125); Thread.Sleep(125); Console.Beep(784, 125); Thread.Sleep(375); Console.Beep(392, 125); Thread.Sleep(375); Console.Beep(523, 125); Thread.Sleep(250); Console.Beep(392, 125); Thread.Sleep(250); Console.Beep(330, 125); Thread.Sleep(250); Console.Beep(440, 125); Thread.Sleep(125); Console.Beep(494, 125); Thread.Sleep(125); Console.Beep(466, 125); Thread.Sleep(42); Console.Beep(440, 125); Thread.Sleep(125); Console.Beep(392, 125); Thread.Sleep(125); Console.Beep(659, 125); Thread.Sleep(125); Console.Beep(784, 125); Thread.Sleep(125); Console.Beep(880, 125); Thread.Sleep(125); Console.Beep(698, 125); Console.Beep(784, 125); Thread.Sleep(125); Console.Beep(659, 125); Thread.Sleep(125); Console.Beep(523, 125); Thread.Sleep(125); Console.Beep(587, 125); Console.Beep(494, 125); Thread.Sleep(125); Console.Beep(523, 125); Thread.Sleep(250); Console.Beep(392, 125); Thread.Sleep(250); Console.Beep(330, 125); Thread.Sleep(250); Console.Beep(440, 125); Thread.Sleep(125); Console.Beep(494, 125); Thread.Sleep(125); Console.Beep(466, 125); Thread.Sleep(42); Console.Beep(440, 125); Thread.Sleep(125); Console.Beep(392, 125); Thread.Sleep(125); Console.Beep(659, 125); Thread.Sleep(125); Console.Beep(784, 125); Thread.Sleep(125); Console.Beep(880, 125); Thread.Sleep(125); Console.Beep(698, 125); Console.Beep(784, 125); Thread.Sleep(125); Console.Beep(659, 125); Thread.Sleep(125); Console.Beep(523, 125); Thread.Sleep(125); Console.Beep(587, 125); Console.Beep(494, 125); Thread.Sleep(375); Console.Beep(784, 125); Console.Beep(740, 125); Console.Beep(698, 125); Thread.Sleep(42); Console.Beep(622, 125); Thread.Sleep(125); Console.Beep(659, 125); Thread.Sleep(167); Console.Beep(415, 125); Console.Beep(440, 125); Console.Beep(523, 125); Thread.Sleep(125); Console.Beep(440, 125); Console.Beep(523, 125); Console.Beep(587, 125); Thread.Sleep(250); Console.Beep(784, 125); Console.Beep(740, 125); Console.Beep(698, 125); Thread.Sleep(42); Console.Beep(622, 125); Thread.Sleep(125); Console.Beep(659, 125); Thread.Sleep(167); Console.Beep(698, 125); Thread.Sleep(125); Console.Beep(698, 125); Console.Beep(698, 125); Thread.Sleep(625); Console.Beep(784, 125); Console.Beep(740, 125); Console.Beep(698, 125); Thread.Sleep(42); Console.Beep(622, 125); Thread.Sleep(125); Console.Beep(659, 125); Thread.Sleep(167); Console.Beep(415, 125); Console.Beep(440, 125); Console.Beep(523, 125); Thread.Sleep(125); Console.Beep(440, 125); Console.Beep(523, 125); Console.Beep(587, 125); Thread.Sleep(250); Console.Beep(622, 125); Thread.Sleep(250); Console.Beep(587, 125); Thread.Sleep(250); Console.Beep(523, 125); Thread.Sleep(1125); Console.Beep(784, 125); Console.Beep(740, 125); Console.Beep(698, 125); Thread.Sleep(42); Console.Beep(622, 125); Thread.Sleep(125); Console.Beep(659, 125); Thread.Sleep(167); Console.Beep(415, 125); Console.Beep(440, 125); Console.Beep(523, 125); Thread.Sleep(125); Console.Beep(440, 125); Console.Beep(523, 125); Console.Beep(587, 125); Thread.Sleep(250); Console.Beep(784, 125); Console.Beep(740, 125); Console.Beep(698, 125); Thread.Sleep(42); Console.Beep(622, 125); Thread.Sleep(125); Console.Beep(659, 125); Thread.Sleep(167); Console.Beep(698, 125); Thread.Sleep(125); Console.Beep(698, 125); Console.Beep(698, 125); Thread.Sleep(625); Console.Beep(784, 125); Console.Beep(740, 125); Console.Beep(698, 125); Thread.Sleep(42); Console.Beep(622, 125); Thread.Sleep(125); Console.Beep(659, 125); Thread.Sleep(167); Console.Beep(415, 125); Console.Beep(440, 125); Console.Beep(523, 125); Thread.Sleep(125); Console.Beep(440, 125); Console.Beep(523, 125); Console.Beep(587, 125); Thread.Sleep(250); Console.Beep(622, 125); Thread.Sleep(250); Console.Beep(587, 125); Thread.Sleep(250); Console.Beep(523, 125);
 
-            Scenario1();
 
-            Scenario2();
+           // Scenario1();
 
-            Scenario3();
+           // Scenario2();
 
-            Scenario4();
+           // Scenario3();
+
+           // Scenario4();
   
-            Console.ResetColor();
+          //  Console.ResetColor();
         }
     }
 }
