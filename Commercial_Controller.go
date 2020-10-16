@@ -1,7 +1,9 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
+	"os"
 	"strconv"
 	"time"
 )
@@ -10,14 +12,13 @@ type Door struct {
 	isopen bool
 }
 
-func (x *Door) Close() {
-	x.isopen = false
-	fmt.Println("Door Closed")
-}
-
-func (x *Door) Open() {
-	x.isopen = true
-	fmt.Println("Door Opened")
+func (x *Door) Open(setopen bool) {
+	x.isopen = setopen
+	if x.isopen {
+		fmt.Println("Door is Opened")
+	} else {
+		fmt.Println("Door is Closed")
+	}
 }
 
 type FloorDoor struct {
@@ -25,19 +26,27 @@ type FloorDoor struct {
 	floor  int
 }
 
+func (x *FloorDoor) Open(setopen bool) {
+	x.isopen = setopen
+	if x.isopen {
+		fmt.Println("Door is Opened")
+	} else {
+		fmt.Println("Door is Closed")
+	}
+}
+
 type Button struct {
 	status bool
 	floor  int
 }
 
-func (x *Button) Activate() {
-	x.status = true
-	fmt.Println("Button Activated")
-}
-
-func (x *Button) Deactivate() {
-	x.status = false
-	fmt.Println("Button Activated")
+func (x *Button) Activate(seton bool) {
+	x.status = seton
+	if x.status == true {
+		fmt.Println("Button Activated")
+	} else {
+		fmt.Println("Button Deactivated")
+	}
 }
 
 type CallButton struct { // floor, direction, status
@@ -46,8 +55,13 @@ type CallButton struct { // floor, direction, status
 	status    bool
 }
 
-func (x *CallButton) DisplayCallButton() {
-	// TODO
+func (x *CallButton) Activate(seton bool) {
+	x.status = seton
+	if x.status == true {
+		fmt.Println("Button Activated")
+	} else {
+		fmt.Println("Button Deactivated")
+	}
 }
 
 type FloorDisplay struct { // Status - 0 = IDLE, 1 = DOWN, 2 = UP
@@ -75,7 +89,7 @@ type Elevator struct {
 	name         string
 	floordisplay *FloorDisplay
 	door         *Door
-	floordoors   []FloorDoor
+	flrdrs       []FloorDoor
 	buttons      []Button
 	targetfloor  int
 }
@@ -85,14 +99,14 @@ func (e *Elevator) ClassicElevator(bottomfloor int, topfloor int, origin int, na
 	e.floordisplay.SetDisplay(origin, 0) // works
 	e.door = &Door{}                     // works
 	e.name = name                        // works
-	e.door.Close()                       // works
+	e.door.Open(false)                   // works
 
 	if origin != bottomfloor {
 		ob := &Button{false, origin}
 		e.buttons = append(e.buttons, *ob)
 		fmt.Println("Added Button with floor", origin)
 		ofd := &FloorDoor{false, origin}
-		e.floordoors = append(e.floordoors, *ofd)
+		e.flrdrs = append(e.flrdrs, *ofd)
 		fmt.Println("Added FloorDoor with floor", origin)
 	}
 
@@ -101,7 +115,7 @@ func (e *Elevator) ClassicElevator(bottomfloor int, topfloor int, origin int, na
 		e.buttons = append(e.buttons, *b)
 		fmt.Println("Added Button with floor", i)
 		fd := &FloorDoor{false, i}
-		e.floordoors = append(e.floordoors, *fd)
+		e.flrdrs = append(e.flrdrs, *fd)
 		fmt.Println("Added FloorDoor with floor", i)
 	}
 }
@@ -111,17 +125,17 @@ func (e *Elevator) ModernElevator(bottomfloor int, topfloor int, origin int, nam
 	e.floordisplay.SetDisplay(origin, 0) // works
 	e.door = &Door{}                     // works
 	e.name = name
-	e.door.Close()
+	e.door.Open(false)
 
 	if origin != bottomfloor {
 		ofd := &FloorDoor{false, origin}
-		e.floordoors = append(e.floordoors, *ofd)
+		e.flrdrs = append(e.flrdrs, *ofd)
 		fmt.Println("Added FloorDoor with floor", origin)
 	}
 
 	for i := bottomfloor; i <= topfloor; i++ {
 		fd := &FloorDoor{false, i}
-		e.floordoors = append(e.floordoors, *fd)
+		e.flrdrs = append(e.flrdrs, *fd)
 		fmt.Println("Added FloorDoor with floor", i)
 	}
 }
@@ -231,18 +245,6 @@ func (c *Column) ModernColumn(name string, origin, bottomfloor, topfloor, elevAm
 		fmt.Println("Added Elevator with name ", c.name+s)
 		e.Display()
 	}
-}
-
-func (c *Column) LookIdle(target int) {
-
-}
-
-func (c *Column) LookUp(target int) {
-
-}
-
-func (c *Column) LookDown(target int) {
-
 }
 
 func (c *Column) RequestElevator(target int) { // Person is at target, they want to get picked up and go to origin
@@ -712,32 +714,68 @@ func (b *ClassicBattery) ClassicScenario4() {
 }
 
 func main() {
-
-	fmt.Println("Rocket Elevator Simulation: ")
-	text2 := ""
-	fmt.Scanln(text2)
-	fmt.Println(text2)
-
 	battery := ClassicBattery{}
-	battery.fillclassiccolumns() // modern approach
+	batt := Battery{}
+	seconds := 2
+	time.Sleep(time.Duration(seconds) * time.Second)
+
+	fmt.Println("Rocket Elevator Simulation: First the classic approach.")
+	fmt.Print("Press 'Enter' to continue...")
+	bufio.NewReader(os.Stdin).ReadBytes('\n')
+	time.Sleep(time.Duration(seconds) * time.Second)
+	battery.fillclassiccolumns()
+
+	fmt.Print(" - Scenario 1....... \n")
+	fmt.Print("Press 'Enter' to continue...")
+	bufio.NewReader(os.Stdin).ReadBytes('\n')
+	time.Sleep(time.Duration(seconds) * time.Second)
 	battery.ClassicScenario1()
+
+	fmt.Print(" - Scenario 2....... \n")
+	fmt.Print("Press 'Enter' to continue...")
+	bufio.NewReader(os.Stdin).ReadBytes('\n')
+	time.Sleep(time.Duration(seconds) * time.Second)
 	battery.ClassicScenario2()
+
+	fmt.Print(" - Scenario 3....... \n")
+	fmt.Print("Press 'Enter' to continue...")
+	bufio.NewReader(os.Stdin).ReadBytes('\n')
+	time.Sleep(time.Duration(seconds) * time.Second)
 	battery.ClassicScenario3()
+
+	fmt.Print(" - Scenario 4....... \n")
+	fmt.Print("Press 'Enter' to continue...")
+	bufio.NewReader(os.Stdin).ReadBytes('\n')
+	time.Sleep(time.Duration(seconds) * time.Second)
 	battery.ClassicScenario4()
 
-	fmt.Printf("Current Unix Time: %v\n", time.Now().Format)
-
-	time.Sleep(2000 * time.Millisecond)
-
-
-
-	seconds := 10
-
+	fmt.Print("Now - the Modern Approach\n")
+	fmt.Print("Press 'Enter' to continue...")
+	bufio.NewReader(os.Stdin).ReadBytes('\n')
 	time.Sleep(time.Duration(seconds) * time.Second)
-	fmt.Printf("Current Unix Time: %v\n", time.Now().Unix())
-	// battery.ModScenario1()
-	// battery.ModScenario2()
-	// battery.ModScenario3()
-	// battery.ModScenario4()
+	batt.fillcolumns()
 
+	fmt.Print(" - Scenario 1....... \n")
+	fmt.Print("Press 'Enter' to continue...")
+	bufio.NewReader(os.Stdin).ReadBytes('\n')
+	time.Sleep(time.Duration(seconds) * time.Second)
+	batt.ModScenario1()
+
+	fmt.Print(" - Scenario 2....... \n")
+	fmt.Print("Press 'Enter' to continue...")
+	bufio.NewReader(os.Stdin).ReadBytes('\n')
+	time.Sleep(time.Duration(seconds) * time.Second)
+	batt.ModScenario2()
+
+	fmt.Print(" - Scenario 3....... \n")
+	fmt.Print("Press 'Enter' to continue...")
+	bufio.NewReader(os.Stdin).ReadBytes('\n')
+	time.Sleep(time.Duration(seconds) * time.Second)
+	batt.ModScenario3()
+
+	fmt.Print(" - Scenario 4....... \n")
+	fmt.Print("Press 'Enter' to continue...")
+	bufio.NewReader(os.Stdin).ReadBytes('\n')
+	time.Sleep(time.Duration(seconds) * time.Second)
+	batt.ModScenario4()
 }

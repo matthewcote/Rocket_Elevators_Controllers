@@ -20,7 +20,7 @@ class Floor_Display #Define floor_display
 
 end
 
-class Elevator_Door 
+class Door 
 
     attr_reader :status
 
@@ -36,14 +36,15 @@ class Elevator_Door
         @status = "CLOSED"
     end
 
-    def elevator_door_alert 
+    def door_alert 
         open_door
         wait
     end  
 
 end
 
-class Door 
+
+class FloorDoor 
 
     attr_reader :floor, :status
 
@@ -67,6 +68,15 @@ class Door
 
 end
 
+class button
+    attr_reader :floor, :status
+
+    def initialize(floor)
+        @floor =  floor
+        @status = "IDLE" 
+    end
+end
+
 class Call_Button 
 
     attr_reader :direction, :floor, :status
@@ -74,17 +84,17 @@ class Call_Button
     def initialize(floor, direction)
         @direction = direction
         @floor =  floor
-        @status = "IDLE" 
+        @status = false 
     end
 
-    def activated()
-        @status = "ACTIVE"
+    def SetOpen(open)
+        @status = open
+        if @status == true
+            print("Call Button with floor ", @floor, "and direction " , @direction , " is Activeated")
+        else
+            print("Call Button with floor ", @floor, "and direction " , @direction , " is Deactiveated")
+        end
     end
-
-    def deactivated()
-        @status = "IDLE"
-    end
-
 end
 
 class Request_Button
@@ -93,17 +103,17 @@ class Request_Button
 
     def initialize(floor)
         @floor =  floor
-        @status = "IDLE" 
+        @status = false 
     end
 
-    def activate()
-        @status = "ACTIVE"
+    def SetOpen(open)
+        @status = open
+        if @status == true
+            print("Call Button with floor ", @floor, " is Activeated")
+        else
+            print("Call Button with floor  ", @floor, " is Deactiveated")
+        end
     end
-
-    def deactivate()
-        @status = "IDLE"
-    end
-
 end
 
 class Elevator_
@@ -115,23 +125,25 @@ class Elevator_
         @door_list = Array.new 
         @button_list = Array.new
         @floor_list = Array.new 
-        @door = Elevator_Door.new()
+        @door = Door.new()
         @floor_display = Floor_Display.new(@current_floor, @status) 
         floor = bottom_floor 
         while floor <= top_floor
-            door = Door.new(floor) 
-            @door_list.push(door) 
+            floordoor = FloorDoor.new(floor) 
+            @door_list.push(floordoor) 
             button = Request_Button.new(floor)
             @button_list.push(button)
             floor += 1 
         end
     end
+    
     def push_floor_list(floor)
         @floor_list.push(floor) 
         @status = "ACTIVE"
         @button_list[floor-1].activate()
         move()
     end
+
     def move()
         for floor in @floor_list
             if floor == @current_floor then
@@ -152,6 +164,7 @@ class Elevator_
             end
         end
     end
+
     def stop()
         if @num == 0
             character = 'A'
@@ -173,9 +186,11 @@ class Elevator_
             move()
         end
     end
+
     def wait()
         @status = "IDLE" #'TODO - can add a wait variable to be set when initializing column or change to like 3 seconds'
     end
+
     def close_doors(floor)
         if @num == 0
             character = 'A'
@@ -245,7 +260,7 @@ class Column
 
     end
 
-    def fill_call_button_list()
+    def fill_call_button_list() # Classic columns
         floor = @bottom_floor+1
 
         while floor < @top_floor
@@ -286,11 +301,8 @@ class Column
                         elevator_choice = elevator 
                         best_diff = diff 
                     end
-
                 end
-
             end
-
         end
 
         if elevator_choice != "NULL" then
@@ -479,6 +491,262 @@ class Column
     
 end
 
+class ModColumn
+
+    attr_reader :num, :bottom_floor, :top_floor, :elevator_num, :elevator_list
+
+    def initialize(num, bottom_floor, top_floor, elevator_num)
+        @num = num
+        @elevator_list = Array.new
+        @call_button_list = Array.new 
+        @bottom_floor = bottom_floor 
+        @top_floor = top_floor 
+        @elevator_num = elevator_num 
+        self.fill_elevator_list() 
+        self.fill_call_button_list() 
+    end
+
+    def fill_elevator_list()
+        num = 0 
+
+        while num < @elevator_num
+            elevator = Elevator_.new(num, @bottom_floor, @top_floor) 
+            @elevator_list.push(elevator) 
+            num += 1 
+        end
+
+    end
+
+    def fill_call_button_list() # Classic columns
+        floor = @bottom_floor+1
+
+        while floor < @top_floor
+            call_button = Call_Button.new(floor, "UP") 
+            @call_button_list.push(call_button)
+            call_button = Call_Button.new(floor, "DOWN") 
+            @call_button_list.push(call_button)
+            floor += 1
+        end
+
+        @call_button_list.push(Call_Button.new(@top_floor, "DOWN")) 
+        @call_button_list.push(Call_Button.new(@bottom_floor, "UP"))
+    end
+
+    def findIdle(floor)
+        elevator_choice = "NULL" 
+        diff = 0 
+        best_diff = 9999 
+
+        for elevator in @elevator_list do
+
+            if elevator.status == "IDLE" then
+            
+                if elevator.current_floor >= floor then
+                    diff = elevator.current_floor - floor 
+
+                    if diff < best_diff then
+                        elevator_choice = elevator
+                        best_diff = diff 
+                    end
+
+                end
+
+                if elevator.current_floor <= floor then
+                    diff = floor - elevator.current_floor
+
+                    if diff < best_diff then
+                        elevator_choice = elevator 
+                        best_diff = diff 
+                    end
+                end
+            end
+        end
+
+        if elevator_choice != "NULL" then
+            if elevator_choice.num == 0
+                character = 'A'
+            end
+            if elevator_choice.num == 1
+                character = 'B'
+            end
+            print 'COLUMN CHOSE ELEVATOR ', character, "-->\n"
+            elevator_choice.push_floor_list(floor)
+            
+            return 
+        end
+
+    end
+
+    def findDown(floor)
+
+        for call_button in @call_button_list do
+
+            if call_button.floor == floor and call_button.direction == "DOWN" then
+                call_button.activated() #For production delete ', direction' - not necessary for operation - just demonstation via console
+            end
+
+        end
+
+        elevator_choice = "NULL" 
+        diff = 0 
+        best_diff = 9999 
+
+        for elevator in @elevator_list do
+
+            if elevator.current_floor < floor and elevator.status == "DOWN" then
+                diff = abs(floor - elevator.current_floor) 
+
+                if diff < best_diff then
+                    elevator_choice = elevator 
+                    best_diff = diff
+                end
+
+            end
+
+        end
+
+        if elevator_choice != "NULL" then
+            if elevator_choice.num == 0
+                character = 'A'
+            end
+            if elevator_choice.num == 1
+                character = 'B'
+            end
+            printf('COLUMN CHOSE ELEVATOR ', character, "-->\n")
+            elevator_choice.push_floor_list(floor)
+            
+            return 
+            elevator_choice.push_floor_list(floor) 
+            return
+        else
+            findIdle(floor)
+        end
+
+        for call_button in @call_button_list do
+
+            if call_button.floor == floor and call_button.direction == "DOWN" then
+                call_button.deactivated() #For production delete ', direction' - not necessary for operation - just demonstation via console
+            end
+
+        end
+
+    end
+
+    def findUp(floor)
+        
+        for call_button in @call_button_list do
+            
+            if call_button.floor == floor and call_button.direction == "UP" then
+                call_button.activated() #For production delete ', direction' - not necessary for operation - just demonstation via console
+            end
+
+        end
+        
+        elevator_choice = "NULL" 
+        diff = 0 
+        best_diff = 9999 
+
+        for elevator in @elevator_list do
+
+            if elevator.current_floor < floor and elevator.status == "UP" then
+                diff = abs(floor - elevator.current_floor) 
+
+                if diff < best_diff then
+                    elevator_choice = elevator 
+                    best_diff = diff
+                end
+
+            end
+
+        end
+        
+        if elevator_choice != "NULL" then
+            if elevator_choice.num == 0
+                character = 'A'
+            end
+            if elevator_choice.num == 1
+                character = 'B'
+            end
+            printf('COLUMN CHOSE ELEVATOR ', character, "-->\n")
+            elevator_choice.push_floor_list(floor)
+            
+            return 
+            elevator_choice.push_floor_list(floor) 
+            return
+        
+        else
+            self.findIdle(floor)
+        
+            for call_button in @call_button_list do
+
+                if call_button.floor == floor and call_button.direction == "UP" then
+                    call_button.deactivated() #For production delete ', direction' - not necessary for operation - just demonstation via console
+                end
+
+            end
+        end
+
+    end
+    def requestElevator(requestedFloor, direction) #Call_Button pushed
+
+        if direction == "UP" then
+            self.findUp(requestedFloor)
+        end
+
+        if direction == "DOWN" then
+            self.findDown(requestedFloor)
+        end
+
+        elevator_choice = "NULL" 
+        diff = 0 
+        best_diff = 9999 
+        
+        for elevator in @elevator_list do
+            
+            if elevator.current_floor < requestedFloor and elevator.status == "DOWN" then
+                diff = abs(requestedFloor - elevator.current_floor) 
+                
+                if diff < best_diff then
+                    elevator_choice = elevator 
+                    best_diff = diff
+                end
+
+            end
+
+        end
+
+        if elevator_choice != "NULL" then
+            if elevator_choice.num == 0
+                character = 'A'
+            end
+            if elevator_choice.num == 1
+                character = 'B'
+            end
+            printf('COLUMN CHOSE ELEVATOR ', character, "-->\n")
+            elevator_choice.push_floor_list(floor)
+            
+            return 
+            elevator_choice.push_floor_list(requestedFloor) 
+            return
+        else
+            self.findIdle(requestedFloor)
+        end
+
+    end
+
+    def requestFloor(elevator, requestedFloor) #Request_Button pushed   
+        if elevator == 0
+            character = 'A'
+        end
+        if elevator == 1
+            character = 'B'
+        end     
+        print "PUSHED ELEVATOR ", character, "  Requested Floor - ", requestedFloor, "-->\n"
+        @elevator_list[elevator].push_floor_list(requestedFloor)
+
+    end
+    
+end
 
 column = Column.new(1, 1, 10, 2)
 print "column created\n"

@@ -20,3 +20,11 @@ an attempt at building a user interface for the simulation in native react. I wa
 my video - https://www.youtube.com/watch?v=i8S97ny8-cw&feature=youtu.be
 
 thank you for your consideration.
+
+Mechanics of Compiled Languages Deliverables - better late than never?
+
+- Personal note - I have had a bad week for personal/health related reasons, so this is late and I have not been a good or productive teammate. I don't know how to contribute but tonight I want to clean and present my Compiled Languages solutions and make a video as was expected by the program. Doing this now because I need to work on something and this I know how to do.
+
+GoLang Controller:
+
+
